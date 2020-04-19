@@ -5,9 +5,19 @@ sudo apt-get -y dist-upgrade
 
 cd /home/$USER
 
+git clone https://github.com/f4dvk/jetson_datv_repeater
+
+# GPIO
+
+sudo groupadd -f -r gpio
+sudo usermod -a -G gpio $USER
+
+sudo cp /opt/nvidia/jetson-gpio/etc/99-gpio.rules /etc/udev/rules.d/
+jetson_datv_repeater/multimon-ng/setup_gpio.sh
+sudo udevadm control --reload-rules && sudo udevadm trigger
+
 # Installation multimon-ng pour lecture des codes DTMF
-git clone https://github.com/AliasOenal/multimon-ng
-cd multimon-ng
+cd jetson_datv_repeater/multimon-ng
 mkdir build
 cd build
 cmake ..

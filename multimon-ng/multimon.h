@@ -106,6 +106,8 @@ void tempo_TX(void);
 void Commande(void);
 void vocal(void);
 void erreur(void);
+void initGPIO(void);
+void exportGPIO(void);
 
 /* ---------------------------------------------------------------------- */
 #endif /* _MULTIMON_H */

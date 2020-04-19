@@ -41,6 +41,7 @@ add_definitions( "-DMAX_VERBOSE_LEVEL=3" "-DCHARSET_UTF8" )
 set( HEADERS ${HEADERS}
     	multimon.h
     	filter.h
+      jetsonGPIO.h
 	)
 
 set( SOURCES ${SOURCES}
@@ -48,6 +49,7 @@ set( SOURCES ${SOURCES}
 	demod_dtmf.c
 	costabi.c
 	costabf.c
+	jetsonGPIO.c
 	)
 
 

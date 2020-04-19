@@ -203,8 +203,10 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
         }
             else
             {
-                for (; i >= sizeof(buffer[0]); i -= sizeof(buffer[0]), sp++)
+                for (; i >= sizeof(buffer[0]); i -= sizeof(buffer[0]), sp++){
                     fbuf[fbuf_cnt++] = (*sp) * (1.0/32768.0);
+                    loop();
+                }
                 if (i)
                     fprintf(stderr, "warning: noninteger number of samples read\n");
             }
@@ -230,7 +232,6 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
 static void input_sound(unsigned int sample_rate, unsigned int overlap,
                         const char *ifname)
 {
-
     short buffer[8192];
     float fbuf[16384];
     unsigned int fbuf_cnt = 0;
@@ -274,8 +275,10 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
         }
             else
             {
-                for (; (unsigned int) i >= sizeof(buffer[0]); i -= sizeof(buffer[0]), sp++)
+                for (; (unsigned int) i >= sizeof(buffer[0]); i -= sizeof(buffer[0]), sp++){
                     fbuf[fbuf_cnt++] = (*sp) * (1.0/32768.0);
+                    loop();
+                }
                 if (i)
                     fprintf(stderr, "warning: noninteger number of samples read\n");
             }
@@ -398,8 +401,10 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
         }
                 else
                 {
-                    for (; i >= sizeof(b.s[0]); i -= sizeof(b.s[0]), sp++)
+                    for (; i >= sizeof(b.s[0]); i -= sizeof(b.s[0]), sp++){
                         fbuf[fbuf_cnt++] = (*sp) * (1.0/32768.0);
+                        loop();
+                    }
                     if (i)
                         fprintf(stderr, "warning: noninteger number of samples read\n");
                 }
@@ -573,6 +578,8 @@ int main(int argc, char *argv[])
     int sample_rate = -1;
     unsigned int overlap = 0;
     char *input_type = "hw";
+
+    exportGPIO();
 
     static struct option long_options[] =
       {

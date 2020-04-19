@@ -30,6 +30,7 @@
 #include <time.h>
 #include <stdlib.h>
 
+#include "jetsonGPIO.h"
 /* ---------------------------------------------------------------------- */
 
 /*
@@ -50,13 +51,16 @@
 
 #define PHINC(x) ((x)*0x10000/SAMPLE_RATE)
 
+/////////////////// GPIO ///////////////////
+enum jetsonGPIONumber PTT = gpio78;
+int load=0;
+
 /////////////////// DTMF ///////////////////
 int Buffer[25];
 int DTMF=0;
 int OK=false;
 int Cod=0;
 int Cd;
-int Tempo;
 int New=0;
 
 ///////////////// COMMANDE /////////////////
@@ -68,7 +72,9 @@ int RX=0;
 unsigned long delai_TX=6;
 time_t top;                        // variabe de calcul temps TX
 time_t Time;                       // variabe de calcul temps TX
-//unsigned long Delai_TX=delai_TX*60000; // calcul du delai TX en millisecondes
+
+//////////////// TEMPO DTMF /////////////////
+time_t topD;
 
 static const char *dtmf_transl = "123A456B789C*0#D";
 
@@ -84,6 +90,15 @@ static void dtmf_init(struct demod_state *s)
 	memset(&s->l1.dtmf, 0, sizeof(s->l1.dtmf));
 }
 
+void exportGPIO(void)
+{
+  gpioExport(PTT);
+}
+void initGPIO(void)
+{
+  gpioSetDirection(PTT,outputPin);
+  gpioSetValue(PTT, low);
+}
 /* ---------------------------------------------------------------------- */
 
 static int find_max_idx(const float *f)
@@ -178,19 +193,17 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 
   if ((OK == true) && (New == 1)){
     Cod++;                                           // Incrementation du compteur curseur (seconde ligne)
-    Tempo=0;
+    topD=time(NULL);
 
     Buffer[Cod] = DTMF;
     New=0;
 
     if ((DTMF == 3) || (DTMF == 11)){
       Cd = 1;
-      tempo_dtmf();
       DTMF=0;
     }
     else if (DTMF == 12){
       Cd = 3;
-      tempo_dtmf();
       DTMF=0;}
 
     if (Cod == Cd) {
@@ -200,19 +213,15 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
       Cod=0;
       OK=false;
       DTMF=0;
-      Tempo=0;
     }
   }
 }
 
 void tempo_dtmf(void)
 {
-  if (OK == true) {
-    Tempo ++;
-  }
-  if ((Cod < 3) && (Tempo > 80000)) {
+
+  if ((Cod < 3) && (OK == true) && (((unsigned long)difftime(Time, topD)) > 4)) {
     verbprintf(0,"Hors temporisation\n");
-    Tempo=0;
     Cod=0;
     OK=false;
   }
@@ -220,8 +229,15 @@ void tempo_dtmf(void)
 
 void loop(void)
 {
+  if (load == 0)
+  {
+    initGPIO();
+    load=1;
+  }
+
   Time=time(NULL);
   tempo_dtmf();
+  tempo_TX();
 }
 
 void Commande(void)
@@ -240,6 +256,7 @@ usleep(100);
           TX=1;
           emission=1;
           top=time(NULL);
+          gpioSetValue(PTT, high);
           vocal();
         }
       }
@@ -462,7 +479,7 @@ void tempo_TX(void)
       usleep(500);
       RX=8;
       //digitalWrite (all_videos, LOW);
-      //vocal();
+      vocal();
     }
 }
 
@@ -478,6 +495,7 @@ void TX_LOW(void)
   //digitalWrite (PTT_UHF, HIGH);
   //digitalWrite (PTT_VHF, HIGH);
   //digitalWrite (PTT_1255, HIGH);
+  gpioSetValue(PTT, low);
   emission=0;
   freq1=0;
   freq2=0;
@@ -519,98 +537,100 @@ void vocal(void) {
 
   if (TX == 1)
   {
-    system("aplay --quiet /home/$USER/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (TX == 2)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (TX == 3)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (TX == 4)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (TX == 5)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (TX == 6)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 1)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 2)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 3)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 4)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 5)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 6)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 7)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 8)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 9)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 10)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 11)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 12)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
 
   if (RX == 13)
   {
-    system("aplay --quiet /home/$USER");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   }
+
+  usleep(200);
 
   //digitalWrite (PTT_Vocal, HIGH);
 }
@@ -619,7 +639,7 @@ void erreur(void) {
   usleep(500);
   //digitalWrite (PTT_Vocal, LOW);
   usleep(300);
-  system("aplay --quiet /home/$USER");
+  system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   usleep(200);
   //digitalWrite (PTT_Vocal, HIGH);
 }
