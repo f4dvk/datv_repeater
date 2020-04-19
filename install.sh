@@ -2,6 +2,13 @@
 
 sudo apt-get update
 sudo apt-get -y dist-upgrade
+sudo apt-get -y install apt-utils
+sudo apt-get -y install nano
+sudo apt-get -y install mpv # longmynd
+sudo apt-get -y install libasound2-dev # longmynd
+
+# Installation lecteur image (image de fond).
+sudo apt-get -y install pqiv # longmynd
 
 cd /home/$USER
 
@@ -31,14 +38,10 @@ git clone https://github.com/f4dvk/dvbsdr
 cd dvbsdr
 ./install.sh
 
-cd /home/$USER
-
 # Installation Longmynd pour la partie RX
-wget https://raw.githubusercontent.com/f4dvk/longmynd/master/install.sh
-chmod +x install.sh
-./install.sh
+cd /home/$USER/jetson_datv_repeater/longmynd
+make
 
 cd /home/$USER
-rm install.sh
 
 #multimon-ng

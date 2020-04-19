@@ -51,8 +51,15 @@
 
 #define PHINC(x) ((x)*0x10000/SAMPLE_RATE)
 
-/////////////////// GPIO ///////////////////
-enum jetsonGPIONumber PTT = gpio78;
+/////////////////// GPIO /////////////////// MAX 22
+enum jetsonGPIONumber ptt_vocal = gpio78;
+enum jetsonGPIONumber ant_145 = gpio16;
+enum jetsonGPIONumber ant_437 = gpio17;
+enum jetsonGPIONumber ant_1255 = gpio18;
+enum jetsonGPIONumber ptt_145 = gpio13;
+enum jetsonGPIONumber ptt_437 = gpio19;
+enum jetsonGPIONumber ptt_1255 = gpio20;
+enum jetsonGPIONumber rx_tnt = gpio77;
 int load=0;
 
 /////////////////// DTMF ///////////////////
@@ -83,6 +90,52 @@ static const unsigned int dtmf_phinc[8] = {
 	PHINC(697), PHINC(770), PHINC(852), PHINC(941)
 };
 
+void SetConfigParam(char *PathConfigFile, char *Param, char *Value)
+{
+  char * line = NULL;
+  size_t len = 0;
+  int read;
+  char Command[511];
+  char BackupConfigName[240];
+  strcpy(BackupConfigName,PathConfigFile);
+  strcat(BackupConfigName,".bak");
+  FILE *fp=fopen(PathConfigFile,"r");
+  FILE *fw=fopen(BackupConfigName,"w+");
+  char ParamWithEquals[255];
+  strcpy(ParamWithEquals, Param);
+  strcat(ParamWithEquals, "=");
+
+  if (debug_level == 2)
+  {
+    printf("Set Config called %s %s %s\n", PathConfigFile , ParamWithEquals, Value);
+  }
+
+  if(fp!=0)
+  {
+    while ((read = getline(&line, &len, fp)) != -1)
+    {
+      if(strncmp (line, ParamWithEquals, strlen(Param) + 1) == 0)
+      {
+        fprintf(fw, "%s=%s\n", Param, Value);
+      }
+      else
+      {
+        fprintf(fw,line);
+      }
+    }
+    fclose(fp);
+    fclose(fw);
+    snprintf(Command, 511, "cp %s %s", BackupConfigName, PathConfigFile);
+    system(Command);
+  }
+  else
+  {
+    printf("Config file not found \n");
+    fclose(fp);
+    fclose(fw);
+  }
+}
+
 /* ---------------------------------------------------------------------- */
 
 static void dtmf_init(struct demod_state *s)
@@ -92,12 +145,47 @@ static void dtmf_init(struct demod_state *s)
 
 void exportGPIO(void)
 {
-  gpioExport(PTT);
+  gpioExport(ptt_vocal);
+  gpioExport(ant_145);
+  gpioExport(ant_437);
+  gpioExport(ant_1255);
+  gpioExport(ptt_145);
+  gpioExport(ptt_437);
+  gpioExport(ptt_1255);
+  gpioExport(rx_tnt);
 }
+
 void initGPIO(void)
 {
-  gpioSetDirection(PTT,outputPin);
-  gpioSetValue(PTT, low);
+  ////////////////////// config ///////////////////
+  const char* user = getenv("USER");
+  char path[630];
+
+  snprintf(path, 630, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
+  #define PATH_PCONFIG_RX path
+
+  snprintf(path, 630, "/home/%s/jetson_datv_repeater/dvbsdr/scripts/config.txt", user);
+  #define PATH_PCONFIG_TX path
+
+  ///////////////////// GPIO ////////////////////
+  gpioSetDirection(ptt_vocal, outputPin);
+  gpioSetDirection(ant_145, outputPin);
+  gpioSetDirection(ant_437, outputPin);
+  gpioSetDirection(ant_1255, outputPin);
+  gpioSetDirection(ptt_145, outputPin);
+  gpioSetDirection(ptt_437, outputPin);
+  gpioSetDirection(ptt_1255, outputPin);
+  gpioSetDirection(rx_tnt, outputPin);
+
+  gpioSetValue(ptt_vocal, high);
+  gpioSetValue(ant_145, high);
+  gpioSetValue(ant_437, high);
+  gpioSetValue(ant_1255, high);
+  gpioSetValue(ptt_145, high);
+  gpioSetValue(ptt_437, high);
+  gpioSetValue(ptt_1255, high);
+  gpioSetValue(rx_tnt, high);
+
 }
 /* ---------------------------------------------------------------------- */
 
@@ -256,7 +344,7 @@ usleep(100);
           TX=1;
           emission=1;
           top=time(NULL);
-          gpioSetValue(PTT, high);
+          gpioSetValue(ptt_437, low);
           vocal();
         }
       }
@@ -273,6 +361,7 @@ usleep(100);
           TX=2;
           emission=1;
           top=time(NULL);
+          gpioSetValue(ptt_145, low);
           vocal();
         }
       }
@@ -289,6 +378,7 @@ usleep(100);
           TX=3;
           emission=1;
           top=time(NULL);
+          gpioSetValue(ptt_145, low);
           vocal();
         }
       }
@@ -305,6 +395,7 @@ usleep(100);
           TX=4;
           emission=1;
           top=time(NULL);
+          gpioSetValue(ptt_437, low);
           vocal();
         }
       }
@@ -321,6 +412,7 @@ usleep(100);
           TX=4;
           emission=1;
           top=time(NULL);
+          gpioSetValue(ptt_1255, low);
           vocal();
         }
       }
@@ -333,6 +425,7 @@ usleep(100);
       verbprintf(0,"RESERVE\n");
       //TX=5;
       //top=time(NULL);
+      //gpioSetValue(ptt_, low);
       //vocal();
     }
 
@@ -345,6 +438,7 @@ usleep(100);
         verbprintf(0,"RX 437MHz SR250\n");
         RX_437=1;
         RX=1;
+        gpioSetValue(ant_437, low);
         vocal();
       }
     else erreur();
@@ -357,6 +451,7 @@ usleep(100);
         verbprintf(0,"RX 145.9MHz SR125\n");
         RX_145=1;
         RX=2;
+        gpioSetValue(ant_145, low);
         vocal();
       }
     else erreur();
@@ -369,6 +464,7 @@ usleep(100);
         verbprintf(0,"RX 145.9MHz SR250\n");
         RX_145=1;
         RX=3;
+        gpioSetValue(ant_145, low);
         vocal();
       }
     else erreur();
@@ -381,6 +477,7 @@ usleep(100);
         verbprintf(0,"RX 437MHz SR125\n");
         RX_437=1;
         RX=4;
+        gpioSetValue(ant_437, low);
         vocal();
       }
     }
@@ -392,6 +489,7 @@ usleep(100);
         verbprintf(0,"RX 1255MHz SR250\n");
         RX_1255=1;
         RX=5;
+        gpioSetValue(ant_1255, low);
         vocal();
       }
     else erreur();
@@ -404,6 +502,8 @@ usleep(100);
         verbprintf(0,"RX 437MHz TNT\n");
         RX_437=1;
         RX=6;
+        //gpioSetValue(ant_437, low);
+        gpioSetValue(rx_tnt, low);
         vocal();
       }
     else erreur();
@@ -495,7 +595,9 @@ void TX_LOW(void)
   //digitalWrite (PTT_UHF, HIGH);
   //digitalWrite (PTT_VHF, HIGH);
   //digitalWrite (PTT_1255, HIGH);
-  gpioSetValue(PTT, low);
+  gpioSetValue(ptt_145, high);
+  gpioSetValue(ptt_437, high);
+  gpioSetValue(ptt_1255, high);
   emission=0;
   freq1=0;
   freq2=0;
@@ -521,9 +623,10 @@ void RX_LOW(void)
   //digitalWrite (RX_438_AM, HIGH);
   //digitalWrite (CAMERA, HIGH);
   //digitalWrite (MIRE_ANIMEE, HIGH);
-  //digitalWrite (ANT_145, HIGH);
-  //digitalWrite (ANT_437, HIGH);
-  //digitalWrite (ANT_1255, HIGH);
+  gpioSetValue(rx_tnt, high);
+  gpioSetValue(ant_145, high);
+  gpioSetValue(ant_437, high);
+  gpioSetValue(ant_1255, high);
   RX_437=0;
   RX_145=0;
   RX_1255=0;
@@ -532,7 +635,8 @@ void RX_LOW(void)
 
 void vocal(void) {
 
-  //digitalWrite (PTT_Vocal, LOW);
+  gpioSetValue(ptt_vocal, low);
+
   usleep(400);
 
   if (TX == 1)
@@ -632,16 +736,16 @@ void vocal(void) {
 
   usleep(200);
 
-  //digitalWrite (PTT_Vocal, HIGH);
+  gpioSetValue(ptt_vocal, high);
 }
 
 void erreur(void) {
   usleep(500);
-  //digitalWrite (PTT_Vocal, LOW);
+  gpioSetValue(ptt_vocal, low);
   usleep(300);
   system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
   usleep(200);
-  //digitalWrite (PTT_Vocal, HIGH);
+  gpioSetValue(ptt_vocal, high);
 }
 
 /* ---------------------------------------------------------------------- */
