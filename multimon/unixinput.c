@@ -252,7 +252,7 @@ static void input_sound(unsigned int sample_rate, unsigned int overlap,
 
 
     /* Create the recording stream */
-    if (!(s = pa_simple_new(NULL, "multimon-ng", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &error))) {
+    if (!(s = pa_simple_new(NULL, "multimon", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &error))) {
         fprintf(stderr, "unixinput.c: pa_simple_new() failed: %s\n", pa_strerror(error));
         exit(4);
     }
@@ -640,7 +640,7 @@ intypefound:
 
     if ( !quietflg )
     { // pay heed to the quietflg
-    fprintf(stderr, "multimon-ng 1.1.8\n"
+    fprintf(stderr, "multimon 1.1.8\n"
         "  (C) 1996/1997 by Tom Sailer HB9JNX/AE4WA\n"
         "  (C) 2012-2019 by Elias Oenal\n"
         "Available demodulators:");

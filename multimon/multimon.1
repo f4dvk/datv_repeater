@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH MULTIMON-NG 1 "January 30, 2020"
+.TH MULTIMON 1 "January 30, 2020"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -13,20 +13,20 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-multimon-ng \- program to decode radio transmissions
+multimon \- program to decode radio transmissions
 .SH SYNOPSIS
-.B multimon-ng
+.B multimon
 .RI [ options ]\ [input_file]
 .SH DESCRIPTION
 This manual page documents briefly the
-.B multimon-ng
+.B multimon
 command. This manual page was written for Debian because the original
 program does not have a manual page.
 .PP
 .\" TeX users may be more comfortable with the \fB<whatever>\fP and
 .\" \fI<whatever>\fP escape sequences to invode bold face and italics,
 .\" respectively.
-The \fBmultimon-ng\fP software can decode a variety of digital transmission modes commonly found on VHF/UHF radio. A standard PC soundcard is used to acquire the signal from a transceiver. The decoding is done completely in software. Currently, the following modes are supported:
+The \fBmultimon\fP software can decode a variety of digital transmission modes commonly found on VHF/UHF radio. A standard PC soundcard is used to acquire the signal from a transceiver. The decoding is done completely in software. Currently, the following modes are supported:
 .PP
 .RS
 .IP \(bu 4
@@ -204,12 +204,12 @@ The \-a and \-s options may be given multiple times to specify the desired list 
 .SH EXAMPLE
 Decode signal modulations from a sound file /tmp/message.wav without using a SCOPE display:
 .br
-multimon-ng \-s SCOPE \-t wav /tmp/message.wav
+multimon \-s SCOPE \-t wav /tmp/message.wav
 .PP
 With no input file specified, the program listens directly to the sound card using PulseAudio.
 So to decode (only) DTMF tones on the sound card input:
 .br
-multimon-ng -a DTMF
+multimon -a DTMF
 .SH NOTICE
 Please note that monitoring commercial services may be prohibited in some countries, this software should therefore
 only be used to monitor the amateur radio service.

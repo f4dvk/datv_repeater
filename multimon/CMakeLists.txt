@@ -3,7 +3,7 @@ cmake_minimum_required( VERSION 2.8.8 )
 # The "MSVC" flag isn't set until the "project" command
 # is called.  Let's just check the operating system.
 
-project( multimon-ng C )
+project( multimon C )
 
 set( TARGET "${PROJECT_NAME}" )
 set( VERSION "1.1.8" )
@@ -24,7 +24,7 @@ check_c_source_compiles(
 	"int main() { __builtin_popcount(42); return 0; }" USE_BUILTIN_POPCOUNT )
 
 set( INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" )
-install( FILES multimon-ng.1 DESTINATION "${INSTALL_MAN_DIR}/man1" )
+install( FILES multimon.1 DESTINATION "${INSTALL_MAN_DIR}/man1" )
 
 if( PULSE_AUDIO_SUPPORT )
 	include_directories( ${PULSEAUDIO_INCLUDE_DIR} )
@@ -56,4 +56,4 @@ set( SOURCES ${SOURCES}
 add_executable( "${TARGET}" ${SOURCES} ${HEADERS} )
 set_property(TARGET "${TARGET}" PROPERTY LINKER_LANGUAGE C)
 target_link_libraries( "${TARGET}" m )
-install(TARGETS multimon-ng DESTINATION bin)
+install(TARGETS multimon DESTINATION bin)

@@ -20,22 +20,19 @@ sudo groupadd -f -r gpio
 sudo usermod -a -G gpio $USER
 
 sudo cp /opt/nvidia/jetson-gpio/etc/99-gpio.rules /etc/udev/rules.d/
-jetson_datv_repeater/multimon-ng/setup_gpio.sh
+jetson_datv_repeater/multimon/setup_gpio.sh
 sudo udevadm control --reload-rules && sudo udevadm trigger
 
-# Installation multimon-ng pour lecture des codes DTMF
-cd jetson_datv_repeater/multimon-ng
+# Installation multimon pour lecture des codes DTMF
+cd jetson_datv_repeater/multimon
 mkdir build
 cd build
 cmake ..
 make
 sudo make install
 
-cd /home/$USER
-
 # Installation de dvbsdr pour la partie TX
-git clone https://github.com/f4dvk/dvbsdr
-cd dvbsdr
+cd /home/$USER/jetson_datv_repeater/dvbsdr
 ./install.sh
 
 # Installation Longmynd pour la partie RX
@@ -44,4 +41,4 @@ make
 
 cd /home/$USER
 
-#multimon-ng
+#multimon

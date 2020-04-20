@@ -9,7 +9,7 @@ QMAKE_CFLAGS += -g # For profiling
 isEmpty(PREFIX) {
  PREFIX = /usr/local/
 }
-TARGET = multimon-ng
+TARGET = multimon
 target.path = $$PREFIX/bin
 INSTALLS += target
 
