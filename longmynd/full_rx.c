@@ -19,10 +19,13 @@ char TXT[2];
 char IP[10];
 char Port[5];
 char Player[2];
+char Quiet[2];
 
-unsigned long delai_TXT=2;
-time_t top2;                        // variabe de calcul temps TX
-time_t Time;                       // variabe de calcul temps TX
+unsigned long delai_TXT=2;          // delai entre deux écritures en secondes
+time_t top2;                        // variabe de calcul temps ecriture infos.txt
+unsigned long delai_reset=5;          // delai entre perte rx et reset en secondes
+time_t top;                        // variabe de calcul temps reset mpv
+time_t Time;                       // variabe de calcul temps
 
 void GetConfigParam(char *PathConfigFile, char *Param, char *Value)
 {
@@ -102,8 +105,6 @@ int main() {
     float MER;
     int LCK=0;
     char Command[530];
-    unsigned long temps;
-    unsigned long top;
 
     GetConfigParam(PATH_PCONFIG,"freq", Freq);
     GetConfigParam(PATH_PCONFIG,"symbolrate", Sr);
@@ -114,6 +115,7 @@ int main() {
     GetConfigParam(PATH_PCONFIG,"ip", IP);
     GetConfigParam(PATH_PCONFIG,"port", Port);
     GetConfigParam(PATH_PCONFIG,"player", Player);
+    GetConfigParam(PATH_PCONFIG,"quiet", Quiet);
 
     if(strcmp(In, "a") == 0)
     {
@@ -145,7 +147,6 @@ int main() {
     }
 
     while (1) {
-      temps ++;
       Time=time(NULL);
       num=read(fd_status_fifo, status_message_char, 1);
       if (num >= 0 )
@@ -168,10 +169,10 @@ int main() {
               strcpy(STATEtext, "Searching");
               if (LCK == 1)
               {
-                top=temps;
+                top=time(NULL);
                 LCK=2;
               }
-              if (((temps - top) > 15000) && (LCK == 2) && (strcmp(Player, "1") == 0))
+              if ((((unsigned long)difftime(Time, top)) > delai_reset) && (LCK == 2) && (strcmp(Player, "1") == 0))
               {
                 system("sudo killall mpv >/dev/null 2>/dev/null");
                 usleep(300);
@@ -461,7 +462,10 @@ int main() {
             }
             snprintf(MERtext, 24, "MER %.1f (%.1f needed)", MER, MERThreshold);
 
-            printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n##################\n", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext);
+            if (strcmp(Quiet, "0") == 0)
+            {
+              printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n##################\n", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext);
+            }
 
             if ((((unsigned long)difftime(Time, top2)) > delai_TXT) && (strcmp(TXT, "1") == 0))
             {

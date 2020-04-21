@@ -7,3 +7,4 @@ texte=0
 ip=127.0.0.5
 port=1243
 player=0
+quiet=0
