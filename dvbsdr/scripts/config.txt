@@ -1,0 +1,12 @@
+call=F5ZBC
+freq=437
+symbolrate=250
+mode=DVBS
+constellation=QPSK
+gain=0.92
+upsample=4
+videosource=VIDEOSOURCE_SCREEN
+codec=H264
+audiosource=USB_AUDIO
+videosourceip=232.0.0.2
+videosourceport=1234

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=sh -c "gnome-terminal --window --full-screen -- /home/$USER/longmynd/full_rx &"
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name=RX longmynd
+Comment=

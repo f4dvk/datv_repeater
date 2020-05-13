@@ -22,10 +22,12 @@ char Player[2];
 char Quiet[2];
 
 unsigned long delai_TXT=2;          // delai entre deux écritures en secondes
-time_t top2;                        // variabe de calcul temps ecriture infos.txt
 unsigned long delai_reset=5;          // delai entre perte rx et reset en secondes
-time_t top;                        // variabe de calcul temps reset mpv
-time_t Time;                       // variabe de calcul temps
+unsigned long delai_term=0.5;          // delai rafraichissement infos du terminal en secondes
+time_t top;                        // variable de calcul temps reset mpv
+time_t top2;                        // variable de calcul temps ecriture infos.txt
+time_t top3;                        // variable de calcul temps affichage infos dans le terminal
+time_t Time;                       // variable de calcul temps
 
 void GetConfigParam(char *PathConfigFile, char *Param, char *Value)
 {
@@ -462,9 +464,11 @@ int main() {
             }
             snprintf(MERtext, 24, "MER %.1f (%.1f needed)", MER, MERThreshold);
 
-            if (strcmp(Quiet, "0") == 0)
+            if ((strcmp(Quiet, "0") == 0) && (((unsigned long)difftime(Time, top3)) > delai_term))
             {
-              printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n##################\n", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext);
+              top3=time(NULL);
+              system("clear && printf '\e[3J'");
+              printf("##################\n\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n\n##################\n", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext);
             }
 
             if ((((unsigned long)difftime(Time, top2)) > delai_TXT) && (strcmp(TXT, "1") == 0))

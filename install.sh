@@ -41,4 +41,10 @@ make
 
 cd /home/$USER
 
+# désactivation transparence du terminal
+dconf write /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/use-theme-transparency false
+
+# Démarrage automatique
+#cp /home/$USER/longmynd/rx.desktop /home/$USER/.config/autostart/
+
 #multimon
