@@ -99,6 +99,7 @@ void _verbprintf(int verb_level, const char *fmt, ...);
 /* ---------------------------------------------------------------------- */
 
 void loop(void);
+void Ptt(void);
 void TX_LOW(void);
 void RX_LOW(void);
 void tempo_dtmf(void);

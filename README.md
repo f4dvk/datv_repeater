@@ -17,4 +17,5 @@ https://github.com/davecrump/longmynd
 https://github.com/philcrump/longmynd  
 https://github.com/myorangedragon/longmynd
 
+Deux Jetson Nano; un RX, commande DTMF et l'autre TX avec pilotage en SSH
 Programme en cours de développement...

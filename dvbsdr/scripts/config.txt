@@ -1,12 +1,12 @@
 call=F5ZBC
 freq=437
 symbolrate=250
+fec=7
 mode=DVBS
 constellation=QPSK
-gain=0.92
+gain=92
 upsample=4
-videosource=VIDEOSOURCE_SCREEN
 codec=H264
-audiosource=USB_AUDIO
-videosourceip=232.0.0.2
-videosourceport=1234
+jetsonip=192.168.1.245
+jetsonuser=jetson
+jetsonpw=nano

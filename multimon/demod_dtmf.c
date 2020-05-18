@@ -83,6 +83,11 @@ time_t Time;                       // variabe de calcul temps TX
 //////////////// TEMPO DTMF /////////////////
 time_t topD;
 
+//////////////// TEMPO PTT /////////////////
+unsigned long delai_PTT=5;
+time_t topPTT;
+int on=0;
+
 static const char *dtmf_transl = "123A456B789C*0#D";
 
 static const unsigned int dtmf_phinc[8] = {
@@ -326,6 +331,7 @@ void loop(void)
   Time=time(NULL);
   tempo_dtmf();
   tempo_TX();
+  Ptt();
 }
 
 void Commande(void)
@@ -335,18 +341,20 @@ usleep(100);
 //////////////////////////////////////// TX ////////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 0) && (Cod>0)) // Code *01
     {
-      if (RX_437 == 0){
+      if (RX_145 == 0){
         if (TX != 1){
           TX_LOW();
           usleep(500);
-          verbprintf(0,"TX 437MHz SR250\n");
-          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
-	        SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
-          TX_437=1;
+          verbprintf(0,"TX 145.9MHz SR125\n");
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          usleep(100);
+          TX_145=1;
           TX=1;
           emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
-          gpioSetValue(ptt_437, low);
+          topPTT=time(NULL);
           vocal();
         }
       }
@@ -358,14 +366,16 @@ usleep(100);
         if (TX != 2){
           TX_LOW();
           usleep(500);
-          verbprintf(0,"TX 145.9MHz SR125\n");
+          verbprintf(0,"TX 145.9MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
-	        SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          usleep(100);
           TX_145=1;
           TX=2;
           emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
-          gpioSetValue(ptt_145, low);
+          topPTT=time(NULL);
           vocal();
         }
       }
@@ -373,18 +383,20 @@ usleep(100);
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 2) && (Cod>0)) // Code *03
     {
-      if (RX_145 == 0){
+      if (RX_437 == 0){
         if (TX != 3){
           TX_LOW();
           usleep(500);
-          verbprintf(0,"TX 145.9MHz SR250\n");
-          SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
-	        SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
-          TX_145=1;
+          verbprintf(0,"TX 437MHz SR125\n");
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          usleep(100);
+          TX_437=1;
           TX=3;
           emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
-          gpioSetValue(ptt_145, low);
+          topPTT=time(NULL);
           vocal();
         }
       }
@@ -396,14 +408,16 @@ usleep(100);
         if (TX != 4){
           TX_LOW();
           usleep(500);
-          verbprintf(0,"TX 437MHz SR125\n");
+          verbprintf(0,"TX 437MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
-	        SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          usleep(100);
           TX_437=1;
           TX=4;
           emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
-          gpioSetValue(ptt_437, low);
+          topPTT=time(NULL);
           vocal();
         }
       }
@@ -417,12 +431,14 @@ usleep(100);
           usleep(500);
           verbprintf(0,"TX 1255MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "1255");
-	        SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          usleep(100);
           TX_1255=1;
           TX=4;
           emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
-          gpioSetValue(ptt_1255, low);
+          topPTT=time(NULL);
           vocal();
         }
       }
@@ -434,25 +450,26 @@ usleep(100);
       //usleep(500);
       verbprintf(0,"RESERVE\n");
       //TX=5;
-      //top=time(NULL);
-      //gpioSetValue(ptt_, low);
+      //top=time(NULL);;
+      //topPTT=time(NULL);
       //vocal();
     }
 
 //////////////////////////////////////// RX ////////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 13) && (Cod>0)) // Code *10
     {
-      if (TX_437 == 0){
+      if (TX_145 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 437MHz SR250\n");
+        verbprintf(0,"RX 145.9MHz SR125\n");
         SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
-        SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
+        usleep(100);
         system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
-        RX_437=1;
+        RX_145=1;
         RX=1;
-        gpioSetValue(ant_437, low);
+        gpioSetValue(ant_145, low);
         vocal();
       }
     else erreur();
@@ -462,31 +479,33 @@ usleep(100);
       if (TX_145 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 145.9MHz SR125\n");
+        verbprintf(0,"RX 145.9MHz SR250\n");
         SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        usleep(100);
         system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
         RX_145=1;
         RX=2;
         gpioSetValue(ant_145, low);
         vocal();
       }
-    else erreur();
+    else erreur()
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) // Code *12
     {
-      if (TX_145 == 0){
+      if (TX_437 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 145.9MHz SR250\n");
+        verbprintf(0,"RX 437MHz SR125\n");
         SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
-        SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
+        usleep(100);
         system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
-        RX_145=1;
+        RX_437=1;
         RX=3;
-        gpioSetValue(ant_145, low);
+        gpioSetValue(ant_437, low);
         vocal();
       }
     else erreur();
@@ -496,10 +515,11 @@ usleep(100);
       if (TX_437 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 437MHz SR125\n");
+        verbprintf(0,"RX 437MHz SR250\n");
         SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        usleep(100);
         system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
         RX_437=1;
         RX=4;
@@ -516,6 +536,7 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "1255000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        usleep(100);
         system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
         RX_1255=1;
         RX=5;
@@ -543,7 +564,7 @@ usleep(100);
       RX_LOW();
       usleep(500);
       verbprintf(0,"MIRE\n");
-      SetConfigParam(PATH_PCONFIG_TX, "videosource", "MIRE");
+      //SetConfigParam(PATH_PCONFIG_TX, "videosource", "MIRE");
       RX=7;
       vocal();
     }
@@ -614,13 +635,28 @@ void tempo_TX(void)
     }
 }
 
+void Ptt(void)
+{
+  if ((TX != 0) && (on == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
+  {
+    if (TX_145 == 1)
+      gpioSetValue(ptt_145, low);
+    else if (TX_437 == 1)
+      gpioSetValue(ptt_437, low);
+    else if (TX_1255 == 1)
+      gpioSetValue(ptt_1255, low);
+    on=1;
+  }
+}
+
 void TX_LOW(void)
 {
-  system("sudo killall limesdr_dvb >/dev/null 2>/dev/null");
-  system("sudo killall gst-launch-1.0 >/dev/null 2>/dev/null");
-  system("sudo killall ffmpeg >/dev/null 2>/dev/null");
-  system("sudo killall -9 limesdr_dvb >/dev/null 2>/dev/null");
-  system("/home/$USER/dvbsdr/build/limesdr_toolbox/limesdr_stopchannel >/dev/null 2>/dev/null");
+  system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/TXstop.sh >/dev/null 2>/dev/null &");
+  //system("sudo killall limesdr_dvb >/dev/null 2>/dev/null");
+  //system("sudo killall gst-launch-1.0 >/dev/null 2>/dev/null");
+  //system("sudo killall ffmpeg >/dev/null 2>/dev/null");
+  //system("sudo killall -9 limesdr_dvb >/dev/null 2>/dev/null");
+  //system("/home/$USER/dvbsdr/build/limesdr_toolbox/limesdr_stopchannel >/dev/null 2>/dev/null");
   //digitalWrite (PTT_DATV, HIGH);
   //digitalWrite (PTT_TNT, HIGH);
   //digitalWrite (PTT_UHF, HIGH);
@@ -637,6 +673,7 @@ void TX_LOW(void)
   TX_145=0;
   TX_1255=0;
   TX=0;
+  on=0;
 }
 
 void RX_LOW(void)
@@ -644,7 +681,6 @@ void RX_LOW(void)
   system("sudo killall full_rx >/dev/null 2>/dev/null");
   system("sudo killall longmynd >/dev/null 2>/dev/null");
   system("sudo killall mpv >/dev/null 2>/dev/null");
-  //digitalWrite (RX_DATV, HIGH);
   //digitalWrite (RX_TNT, HIGH);
   //digitalWrite (MIRE, HIGH);
   //digitalWrite (all_videos, HIGH);
@@ -672,97 +708,97 @@ void vocal(void) {
 
   if (TX == 1)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*01.wav");
   }
 
   if (TX == 2)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*02.wav");
   }
 
   if (TX == 3)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*03.wav");
   }
 
   if (TX == 4)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*04.wav");
   }
 
   if (TX == 5)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*05.wav");
   }
 
   if (TX == 6)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*06.wav");
   }
 
   if (RX == 1)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*10.wav");
   }
 
   if (RX == 2)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*11.wav");
   }
 
   if (RX == 3)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*12.wav");
   }
 
   if (RX == 4)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*13.wav");
   }
 
   if (RX == 5)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*14.wav");
   }
 
   if (RX == 6)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*15.wav");
   }
 
   if (RX == 7)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*16.wav");
   }
 
   if (RX == 8)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*17.wav");
   }
 
   if (RX == 9)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*18.wav");
   }
 
   if (RX == 10)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*19.wav");
   }
 
   if (RX == 11)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*20.wav");
   }
 
   if (RX == 12)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*21.wav");
   }
 
   if (RX == 13)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/*22.wav");
   }
 
   usleep(200);
@@ -774,7 +810,7 @@ void erreur(void) {
   usleep(500);
   gpioSetValue(ptt_vocal, low);
   usleep(300);
-  system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/");
+  system("aplay -D plughw:2,0 --quiet /home/$USER/Musique/erreur.wav");
   usleep(200);
   gpioSetValue(ptt_vocal, high);
 }
