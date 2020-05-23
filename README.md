@@ -10,7 +10,7 @@ Source pour l'accès aux GPIO:
 https://github.com/jkjung-avt/dqn-tx1-for-nintendo/tree/master/gpio/non_root
 
 Source pour la partie TX:  
-https://github.com/F5OEO/dvbsdr
+https://github.com/F5OEO/limesdr_toolbox
 
 Sources pour la partie RX:  
 https://github.com/davecrump/longmynd  

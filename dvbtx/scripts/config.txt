@@ -1,6 +1,6 @@
 call=F5ZBC
 freq=437
-symbolrate=250
+symbolrate=125
 fec=7
 mode=DVBS
 constellation=QPSK

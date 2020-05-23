@@ -5,7 +5,8 @@
 # you have "fix_udev_gpio.sh" and "99-com.rules" in the same directory
 # when you run this script.
 
-sudo groupadd gpio
+#sudo groupadd gpio
+sudo groupadd -f -r gpio
 sudo usermod -a -G gpio $USER
 sudo cp fix_udev_gpio.sh /usr/local/bin/
 sudo chmod a+x /usr/local/bin/fix_udev_gpio.sh

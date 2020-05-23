@@ -3,6 +3,7 @@
 # Le pilotage du TX se fait en SSH
 
 PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbsdr/scripts/config.txt"
+CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
 lua - "$1" "$2" <<EOF
@@ -32,7 +33,6 @@ CODEC=$(get_config_var codec $PATH_PCONFIG_TX)
 JETSONIP=$(get_config_var jetsonip $PATH_PCONFIG_TX)
 JETSONUSER=$(get_config_var jetsonuser $PATH_PCONFIG_TX)
 JETSONPW=$(get_config_var jetsonpw $PATH_PCONFIG_TX)
-CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 AUDIO_BITRATE=20000
 VIDEO_GOP=100

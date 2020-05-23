@@ -169,8 +169,11 @@ void initGPIO(void)
   snprintf(path, 630, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
   #define PATH_PCONFIG_RX path
 
-  snprintf(path, 630, "/home/%s/jetson_datv_repeater/dvbsdr/scripts/config.txt", user);
+  snprintf(path, 630, "/home/%s/jetson_datv_repeater/dvbtx/scripts/config.txt", user);
   #define PATH_PCONFIG_TX path
+
+  snprintf(path, 630, "/home/%s/jetson_datv_repeater/source/config.txt", user);
+  #define PATH_PCONFIG_SRC path
 
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
@@ -352,7 +355,7 @@ usleep(100);
           TX_145=1;
           TX=1;
           emission=1;
-          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -373,7 +376,7 @@ usleep(100);
           TX_145=1;
           TX=2;
           emission=1;
-          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -394,7 +397,7 @@ usleep(100);
           TX_437=1;
           TX=3;
           emission=1;
-          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -415,7 +418,7 @@ usleep(100);
           TX_437=1;
           TX=4;
           emission=1;
-          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -436,7 +439,7 @@ usleep(100);
           TX_1255=1;
           TX=4;
           emission=1;
-          system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/tx.sh >/dev/null 2>/dev/null &");
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -462,7 +465,6 @@ usleep(100);
         RX_LOW();
         usleep(500);
         verbprintf(0,"RX 145.9MHz SR125\n");
-        SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
@@ -480,7 +482,6 @@ usleep(100);
         RX_LOW();
         usleep(500);
         verbprintf(0,"RX 145.9MHz SR250\n");
-        SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
@@ -498,7 +499,6 @@ usleep(100);
         RX_LOW();
         usleep(500);
         verbprintf(0,"RX 437MHz SR125\n");
-        SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
@@ -516,7 +516,6 @@ usleep(100);
         RX_LOW();
         usleep(500);
         verbprintf(0,"RX 437MHz SR250\n");
-        SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
@@ -533,7 +532,6 @@ usleep(100);
         RX_LOW();
         usleep(500);
         verbprintf(0,"RX 1255MHz SR250\n");
-        SetConfigParam(PATH_PCONFIG_TX, "videosource", "VIDEOSOURCE_SCREEN");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "1255000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
@@ -564,17 +562,18 @@ usleep(100);
       RX_LOW();
       usleep(500);
       verbprintf(0,"MIRE\n");
-      //SetConfigParam(PATH_PCONFIG_TX, "videosource", "MIRE");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "MIRE");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=7;
       vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) // Code *17
     {
-      RX_LOW();
-      usleep(500);
+      //RX_LOW();
+      //usleep(500);
       verbprintf(0,"MULTI-VIDEOS\n");
-      RX=8;
-      vocal();
+      //RX=8;
+      //vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 9) && (Cod>0)) // Code *18
     {
@@ -605,6 +604,8 @@ usleep(100);
       RX_LOW();
       usleep(500);
       verbprintf(0,"FILM\n");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "FILM");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=12;
       vocal();
     }
@@ -651,7 +652,7 @@ void Ptt(void)
 
 void TX_LOW(void)
 {
-  system("/home/$USER/jetson_datv_repeater/dvbsdr/scripts/TXstop.sh >/dev/null 2>/dev/null &");
+  system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/TXstop.sh >/dev/null 2>/dev/null &");
   //system("sudo killall limesdr_dvb >/dev/null 2>/dev/null");
   //system("sudo killall gst-launch-1.0 >/dev/null 2>/dev/null");
   //system("sudo killall ffmpeg >/dev/null 2>/dev/null");
@@ -680,7 +681,8 @@ void RX_LOW(void)
 {
   system("sudo killall full_rx >/dev/null 2>/dev/null");
   system("sudo killall longmynd >/dev/null 2>/dev/null");
-  system("sudo killall mpv >/dev/null 2>/dev/null");
+  system("killall mpv >/dev/null 2>/dev/null");
+  system("killall gst-launch-1.0 >/dev/null 2>/dev/null");
   //digitalWrite (RX_TNT, HIGH);
   //digitalWrite (MIRE, HIGH);
   //digitalWrite (all_videos, HIGH);
