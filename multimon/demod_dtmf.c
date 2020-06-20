@@ -74,6 +74,7 @@ int New=0;
 int emission,val_RX_DATV,freq1,freq2,freq3,RX_437,RX_145,RX_1255,TX_437,TX_145,TX_1255;
 int TX=0;
 int RX=0;
+char path[630];
 
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
@@ -86,7 +87,7 @@ time_t topD;
 //////////////// TEMPO PTT /////////////////
 unsigned long delai_PTT=5;
 time_t topPTT;
-int on=0;
+int TX_On=0;
 
 static const char *dtmf_transl = "123A456B789C*0#D";
 
@@ -110,11 +111,6 @@ void SetConfigParam(char *PathConfigFile, char *Param, char *Value)
   strcpy(ParamWithEquals, Param);
   strcat(ParamWithEquals, "=");
 
-  if (debug_level == 2)
-  {
-    printf("Set Config called %s %s %s\n", PathConfigFile , ParamWithEquals, Value);
-  }
-
   if(fp!=0)
   {
     while ((read = getline(&line, &len, fp)) != -1)
@@ -125,7 +121,7 @@ void SetConfigParam(char *PathConfigFile, char *Param, char *Value)
       }
       else
       {
-        fprintf(fw,line);
+        fprintf(fw, line);
       }
     }
     fclose(fp);
@@ -164,7 +160,6 @@ void initGPIO(void)
 {
   ////////////////////// config ///////////////////
   const char* user = getenv("USER");
-  char path[630];
 
   snprintf(path, 630, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
   #define PATH_PCONFIG_RX path
@@ -468,7 +463,7 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
-        system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
+        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_145=1;
         RX=1;
         gpioSetValue(ant_145, low);
@@ -485,13 +480,13 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
-        system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
+        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_145=1;
         RX=2;
         gpioSetValue(ant_145, low);
         vocal();
       }
-    else erreur()
+    else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) // Code *12
     {
@@ -502,7 +497,7 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
-        system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
+        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_437=1;
         RX=3;
         gpioSetValue(ant_437, low);
@@ -519,7 +514,7 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
-        system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
+        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_437=1;
         RX=4;
         gpioSetValue(ant_437, low);
@@ -535,7 +530,7 @@ usleep(100);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "1255000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
-        system('sh -c "gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &"');
+        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_1255=1;
         RX=5;
         gpioSetValue(ant_1255, low);
@@ -638,7 +633,7 @@ void tempo_TX(void)
 
 void Ptt(void)
 {
-  if ((TX != 0) && (on == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
+  if ((TX != 0) && (TX_On == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
   {
     if (TX_145 == 1)
       gpioSetValue(ptt_145, low);
@@ -646,7 +641,7 @@ void Ptt(void)
       gpioSetValue(ptt_437, low);
     else if (TX_1255 == 1)
       gpioSetValue(ptt_1255, low);
-    on=1;
+    TX_On=1;
   }
 }
 
@@ -674,7 +669,7 @@ void TX_LOW(void)
   TX_145=0;
   TX_1255=0;
   TX=0;
-  on=0;
+  TX_On=0;
 }
 
 void RX_LOW(void)
