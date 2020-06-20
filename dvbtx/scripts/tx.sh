@@ -2,11 +2,11 @@
 
 # Le pilotage du TX se fait en SSH
 
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbsdr/scripts/config.txt"
+PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
-lua - "$1" "$2" <<EOF
+lua5.3 - "$1" "$2" <<EOF
 local key=assert(arg[1])
 local fn=assert(arg[2])
 local file=assert(io.open(fn))
@@ -84,7 +84,7 @@ case "$FEC" in
 esac
 
 # Bitrate
-source /home/$USER/jetson_datv_repeater/dvbsdr/scripts/include/getbitrate.sh
+BITRATE_TS=$(/home/$USER/jetson_datv_repeater/dvbtx/bin/dvb2iq -s $SYMBOLERATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
 let TS_AUDIO_BITRATE=AUDIO_BITRATE*15/10
 let VIDEOBITRATE=(BITRATE_TS-24000-TS_AUDIO_BITRATE)*725/1000
 let VIDEOPEAKBITRATE=VIDEOBITRATE*110/100
@@ -111,7 +111,6 @@ case "$CODEC" in
     # Write the assembled Jetson command to a temp file
     /bin/cat <<EOM >$CMDFILE
     (sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
-    cd ~/dvbsdr/scripts
     gst-launch-1.0 -q v4l2src device=/dev/video1 \
       '!' 'video/x-raw,width=640, height=480, format=(string)YUY2' \
       '!' nvvidconv flip-method=0 \
@@ -128,7 +127,7 @@ case "$CODEC" in
       -c:a copy -f mpegts \
       -metadata service_provider="$CHANNEL" -metadata service_name="$CALL" \
       -streamid 0:256 - \
-    | ../bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+    | /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
       -t "$FREQ"e6 -g $LIME_GAINF -q 1
 ENDSSH
       ) &
@@ -138,7 +137,6 @@ EOM
     # Write the assembled Jetson command to a temp file
     /bin/cat <<EOM >$CMDFILE
     (sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
-    cd ~/dvbsdr/scripts
     gst-launch-1.0 -q v4l2src device=/dev/video1 \
       '!' 'video/x-raw,width=640, height=480, format=(string)YUY2' \
       '!' nvvidconv flip-method=0 \
@@ -154,7 +152,7 @@ EOM
       -c:a copy -f mpegts \
       -metadata service_provider="$CHANNEL" -metadata service_name="$CALL" \
       -streamid 0:256 - \
-    | ../bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+    | /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
       -t "$FREQ"e6 -g $LIME_GAINF -q 1
 ENDSSH
       ) &

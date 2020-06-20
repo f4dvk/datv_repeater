@@ -12,9 +12,11 @@ sudo apt-get -y install nano
 sudo apt-get -y install mpv # longmynd
 sudo apt-get -y install libasound2-dev # longmynd
 sudo apt-get -y install lua5.3 # pour la fonction SH get_config_var
-
+sudo apt-get -y install sshpass
 # Installation lecteur image (image de fond).
 sudo apt-get -y install pqiv # longmynd
+
+mkdir /home/$USER/tmp # pour sshpass
 
 cd /home/$USER
 

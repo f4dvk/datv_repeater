@@ -1,9 +1,9 @@
 #! /bin/bash
 
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbsdr/scripts/config.txt"
+PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
 
 get_config_var() {
-lua - "$1" "$2" <<EOF
+lua5.3 - "$1" "$2" <<EOF
 local key=assert(arg[1])
 local fn=assert(arg[2])
 local file=assert(io.open(fn))
@@ -25,7 +25,7 @@ sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash
   killall gst-launch-1.0
   killall ffmpeg
   killall limesdr_dvb
-  /home/$USER/dvbsdr/bin/limesdr_stopchannel >/dev/null 2>/dev/null
+  /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
 ENDSSH
 
 exit
