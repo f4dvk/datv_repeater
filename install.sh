@@ -5,6 +5,7 @@ echo "-----------------------------------------------------"
 echo "--------- Installation jetson_datv_repeater ---------"
 echo "-----------------------------------------------------"
 
+sudo apt-get -y install dkms
 sudo apt-get update
 sudo apt-get -y dist-upgrade
 sudo apt-get -y install apt-utils
