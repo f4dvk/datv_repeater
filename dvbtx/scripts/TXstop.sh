@@ -1,6 +1,7 @@
 #! /bin/bash
 
 PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
+CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
 lua5.3 - "$1" "$2" <<EOF
@@ -21,11 +22,16 @@ JETSONIP=$(get_config_var jetsonip $PATH_PCONFIG_TX)
 JETSONUSER=$(get_config_var jetsonuser $PATH_PCONFIG_TX)
 JETSONPW=$(get_config_var jetsonpw $PATH_PCONFIG_TX)
 
-sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
+/bin/cat <<EOM >$CMDFILE
+(sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
   killall gst-launch-1.0 >/dev/null 2>/dev/null
   killall ffmpeg >/dev/null 2>/dev/null
   killall limesdr_dvb >/dev/null 2>/dev/null
   /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
 ENDSSH
+) &
+EOM
+
+source "$CMDFILE"
 
 exit

@@ -144,6 +144,18 @@ static void dtmf_init(struct demod_state *s)
 	memset(&s->l1.dtmf, 0, sizeof(s->l1.dtmf));
 }
 
+void unexportGPIO(void)
+{
+  gpioUnexport(ptt_vocal);
+  gpioUnexport(ant_145);
+  gpioUnexport(ant_437);
+  gpioUnexport(ant_1255);
+  gpioUnexport(ptt_145);
+  gpioUnexport(ptt_437);
+  gpioUnexport(ptt_1255);
+  gpioUnexport(rx_tnt);
+}
+
 void exportGPIO(void)
 {
   gpioExport(ptt_vocal);
@@ -189,6 +201,14 @@ void initGPIO(void)
   gpioSetValue(ptt_1255, high);
   gpioSetValue(rx_tnt, high);
 
+}
+
+void initCOM(void)
+{
+  system("sudo killall cat >/dev/null 2>/dev/null");
+  system("sudo chmod o+rw /dev/ttyUSB0");
+  system("stty 9600 -F /dev/ttyUSB0 raw -echo");
+  system("cat /dev/ttyUSB0 >/dev/null 2/dev/null &");
 }
 /* ---------------------------------------------------------------------- */
 
@@ -323,6 +343,7 @@ void loop(void)
   if (load == 0)
   {
     initGPIO();
+    initCOM();
     load=1;
   }
 
@@ -543,6 +564,8 @@ usleep(100);
       if (TX_437 == 0){
         RX_LOW();
         usleep(500);
+        system("echo 'OUTA_1'>/dev/ttyUSB0");
+        system("echo 'OUTB_1'>/dev/ttyUSB0");
         verbprintf(0,"RX 437MHz TNT\n");
         RX_437=1;
         RX=6;
@@ -564,32 +587,38 @@ usleep(100);
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) // Code *17
     {
-      //RX_LOW();
-      //usleep(500);
+      RX_LOW();
+      usleep(500);
       verbprintf(0,"MULTI-VIDEOS\n");
-      //RX=8;
-      //vocal();
+      RX=8;
+      vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 9) && (Cod>0)) // Code *18
     {
       //RX_LOW();
       //usleep(500);
+      system("echo 'OUTA_2'>/dev/ttyUSB0");
+      system("echo 'OUTB_2'>/dev/ttyUSB0");
       verbprintf(0,"RESERVE\n");
-      //RX=9;
-      //vocal();
+      RX=9;
+      vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 10) && (Cod>0)) // Code *19
     {
       //RX_LOW();
       //usleep(500);
+      system("echo 'OUTA_3'>/dev/ttyUSB0");
+      system("echo 'OUTB_3'>/dev/ttyUSB0");
       verbprintf(0,"RESERVE\n");
-      //RX=10;
-      //vocal();
+      RX=10;
+      vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 1) && (Buffer[3] == 13) && (Cod>0)) // Code *20
     {
       RX_LOW();
       usleep(500);
+      system("echo 'OUTA_4'>/dev/ttyUSB0");
+      system("echo 'OUTB_4'>/dev/ttyUSB0");
       verbprintf(0,"CAMERA\n");
       RX=11;
       vocal();
@@ -678,7 +707,6 @@ void RX_LOW(void)
   system("sudo killall longmynd >/dev/null 2>/dev/null");
   system("killall mpv >/dev/null 2>/dev/null");
   system("killall gst-launch-1.0 >/dev/null 2>/dev/null");
-  //digitalWrite (RX_TNT, HIGH);
   //digitalWrite (MIRE, HIGH);
   //digitalWrite (all_videos, HIGH);
   //digitalWrite (VIDEO, HIGH);
@@ -686,7 +714,6 @@ void RX_LOW(void)
   //digitalWrite (RX_1255_FM, HIGH);
   //digitalWrite (RX_438_AM, HIGH);
   //digitalWrite (CAMERA, HIGH);
-  //digitalWrite (MIRE_ANIMEE, HIGH);
   gpioSetValue(rx_tnt, high);
   gpioSetValue(ant_145, high);
   gpioSetValue(ant_437, high);

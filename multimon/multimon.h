@@ -109,6 +109,7 @@ void vocal(void);
 void erreur(void);
 void initGPIO(void);
 void exportGPIO(void);
+void unexportGPIO(void);
 
 /* ---------------------------------------------------------------------- */
 #endif /* _MULTIMON_H */

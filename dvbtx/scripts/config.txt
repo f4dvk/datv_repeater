@@ -7,6 +7,6 @@ constellation=QPSK
 gain=92
 upsample=4
 codec=H264
-jetsonip=192.168.1.245
+jetsonip=192.168.0.40
 jetsonuser=jetson
 jetsonpw=nano

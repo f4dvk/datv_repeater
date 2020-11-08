@@ -579,6 +579,7 @@ int main(int argc, char *argv[])
     unsigned int overlap = 0;
     char *input_type = "hw";
 
+    unexportGPIO();
     exportGPIO();
 
     static struct option long_options[] =
