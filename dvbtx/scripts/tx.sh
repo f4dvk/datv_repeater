@@ -86,7 +86,7 @@ case "$FEC" in
 esac
 
 # Bitrate
-BITRATE_TS=$(/home/$USER/jetson_datv_repeater/dvbtx/bin/dvb2iq -s $SYMBOLERATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
+BITRATE_TS=$(/home/$USER/jetson_datv_repeater/dvbtx/bin/dvb2iq -s $SYMBOLRATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
 let TS_AUDIO_BITRATE=AUDIO_BITRATE*15/10
 let VIDEOBITRATE=(BITRATE_TS-24000-TS_AUDIO_BITRATE)*725/1000
 let VIDEOPEAKBITRATE=VIDEOBITRATE*110/100
@@ -106,6 +106,7 @@ fi
 if [ "$VIDEOBITRATE" -lt 100000 ]; then
   VIDEO_RESX=160
   VIDEO_RESY=120
+  VIDEO_FPS=20
 fi
 
 case "$CODEC" in
@@ -113,15 +114,12 @@ case "$CODEC" in
     # Write the assembled Jetson command to a temp file
     /bin/cat <<EOM >$CMDFILE
     (sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
-    killall gst-launch-1.0 >/dev/null 2>/dev/null
-    killall ffmpeg >/dev/null 2>/dev/null
-    killall limesdr_dvb >/dev/null 2>/dev/null
-    /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
-    sleep 1
-    gst-launch-1.0 udpsrc address=$IPADDRESS port=$PORT \
-      '!' video/mpegts '!' tsdemux name=dem dem. '!' queue '!' h264parse '!' omxh264dec \
+    gst-launch-1.0 -q v4l2src device=/dev/video0 \
+      '!' 'video/x-raw,width=720, height=480, format=(string)YUY2,  framerate=30/1' \
+      '!' nvvidconv flip-method=0 \
+      '!' 'video/x-raw(memory:NVMM), format=(string)I420' \
       '!' nvvidconv \
-      '!' 'video/x-raw(memory:NVMM), width=(int)$VIDEO_RESX, height=(int)$VIDEO_RESY, format=(string)I420' \
+      '!' 'video/x-raw(memory:NVMM), width=(int)'$VIDEO_RESX', height=(int)'$VIDEO_RESY', format=(string)I420' \
       '!' omxh264enc vbv-size=15 control-rate=2 bitrate=$VIDEOBITRATE peak-bitrate=$VIDEOPEAKBITRATE \
       insert-sps-pps=1 insert-vui=1 cabac-entropy-coding=1 preset-level=3 profile=8 iframeinterval=$VIDEO_GOP \
       '!' 'video/x-h264, level=(string)4.1, stream-format=(string)byte-stream' '!' queue '!' mux. alsasrc device=plughw:2 \
@@ -142,15 +140,12 @@ EOM
     # Write the assembled Jetson command to a temp file
     /bin/cat <<EOM >$CMDFILE
     (sshpass -p $JETSONPW ssh -o StrictHostKeyChecking=no $JETSONUSER@$JETSONIP 'bash -s' <<'ENDSSH'
-    killall gst-launch-1.0 >/dev/null 2>/dev/null
-    killall ffmpeg >/dev/null 2>/dev/null
-    killall limesdr_dvb >/dev/null 2>/dev/null
-    /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
-    sleep 1
-    gst-launch-1.0 udpsrc address=$IPADDRESS port=$PORT \
-      '!' video/mpegts '!' tsdemux name=dem dem. '!' queue '!' h264parse '!' omxh264dec \
+    gst-launch-1.0 -q v4l2src device=/dev/video0 \
+      '!' 'video/x-raw,width=720, height=480, format=(string)YUY2, framerate=30/1' \
+      '!' nvvidconv flip-method=0 \
+      '!' 'video/x-raw(memory:NVMM), format=(string)I420' \
       '!' nvvidconv \
-      '!' 'video/x-raw(memory:NVMM), width=(int)$VIDEO_RESX, height=(int)$VIDEO_RESY, format=(string)I420' \
+      '!' 'video/x-raw(memory:NVMM), width=(int)'$VIDEO_RESX', height=(int)'$VIDEO_RESY', format=(string)I420' \
       '!' omxh265enc control-rate=2 bitrate=$VIDEOBITRATE peak-bitrate=$VIDEOPEAKBITRATE preset-level=3 iframeinterval=$VIDEO_GOP \
       '!' 'video/x-h265,stream-format=(string)byte-stream' '!' queue '!' mux. alsasrc device=plughw:2 \
       '!' 'audio/x-raw, format=S16LE, layout=interleaved, rate=48000, channels=1' '!' voaacenc bitrate=$AUDIO_BITRATE \

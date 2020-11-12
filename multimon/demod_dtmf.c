@@ -53,9 +53,9 @@
 
 /////////////////// GPIO /////////////////// MAX 22
 enum jetsonGPIONumber ptt_vocal = gpio78;
-enum jetsonGPIONumber ant_145 = gpio16;
-enum jetsonGPIONumber ant_437 = gpio17;
-enum jetsonGPIONumber ant_1255 = gpio18;
+enum jetsonGPIONumber band_bit0 = gpio16;
+enum jetsonGPIONumber band_bit1 = gpio17;
+//enum jetsonGPIONumber ant_1255 = gpio18;
 enum jetsonGPIONumber ptt_145 = gpio13;
 enum jetsonGPIONumber ptt_437 = gpio19;
 enum jetsonGPIONumber ptt_1255 = gpio20;
@@ -74,7 +74,9 @@ int New=0;
 int emission,val_RX_DATV,freq1,freq2,freq3,RX_437,RX_145,RX_1255,TX_437,TX_145,TX_1255;
 int TX=0;
 int RX=0;
-char path[630];
+char path1[630];
+char path2[630];
+char path3[630];
 
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
@@ -121,7 +123,7 @@ void SetConfigParam(char *PathConfigFile, char *Param, char *Value)
       }
       else
       {
-        fprintf(fw, line);
+        fprintf(fw, "%s", line);
       }
     }
     fclose(fp);
@@ -147,9 +149,9 @@ static void dtmf_init(struct demod_state *s)
 void unexportGPIO(void)
 {
   gpioUnexport(ptt_vocal);
-  gpioUnexport(ant_145);
-  gpioUnexport(ant_437);
-  gpioUnexport(ant_1255);
+  gpioUnexport(band_bit0);
+  gpioUnexport(band_bit1);
+  //gpioUnexport(ant_1255);
   gpioUnexport(ptt_145);
   gpioUnexport(ptt_437);
   gpioUnexport(ptt_1255);
@@ -159,9 +161,9 @@ void unexportGPIO(void)
 void exportGPIO(void)
 {
   gpioExport(ptt_vocal);
-  gpioExport(ant_145);
-  gpioExport(ant_437);
-  gpioExport(ant_1255);
+  gpioExport(band_bit0);
+  gpioExport(band_bit1);
+  //gpioExport(ant_1255);
   gpioExport(ptt_145);
   gpioExport(ptt_437);
   gpioExport(ptt_1255);
@@ -173,33 +175,33 @@ void initGPIO(void)
   ////////////////////// config ///////////////////
   const char* user = getenv("USER");
 
-  snprintf(path, 630, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
-  #define PATH_PCONFIG_RX path
+  snprintf(path1, 630, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
+  #define PATH_PCONFIG_RX path1
 
-  snprintf(path, 630, "/home/%s/jetson_datv_repeater/dvbtx/scripts/config.txt", user);
-  #define PATH_PCONFIG_TX path
+  snprintf(path2, 630, "/home/%s/jetson_datv_repeater/dvbtx/scripts/config.txt", user);
+  #define PATH_PCONFIG_TX path2
 
-  snprintf(path, 630, "/home/%s/jetson_datv_repeater/source/config.txt", user);
-  #define PATH_PCONFIG_SRC path
+  snprintf(path3, 630, "/home/%s/jetson_datv_repeater/source/config.txt", user);
+  #define PATH_PCONFIG_SRC path3
 
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
-  gpioSetDirection(ant_145, outputPin);
-  gpioSetDirection(ant_437, outputPin);
-  gpioSetDirection(ant_1255, outputPin);
+  gpioSetDirection(band_bit0, outputPin);
+  gpioSetDirection(band_bit1, outputPin);
+  //gpioSetDirection(ant_1255, outputPin);
   gpioSetDirection(ptt_145, outputPin);
   gpioSetDirection(ptt_437, outputPin);
   gpioSetDirection(ptt_1255, outputPin);
   gpioSetDirection(rx_tnt, outputPin);
 
-  gpioSetValue(ptt_vocal, high);
-  gpioSetValue(ant_145, high);
-  gpioSetValue(ant_437, high);
-  gpioSetValue(ant_1255, high);
-  gpioSetValue(ptt_145, high);
-  gpioSetValue(ptt_437, high);
-  gpioSetValue(ptt_1255, high);
-  gpioSetValue(rx_tnt, high);
+  gpioSetValue(ptt_vocal, low);
+  gpioSetValue(band_bit0, low);
+  gpioSetValue(band_bit1, low);
+  //gpioSetValue(ant_1255, high);
+  gpioSetValue(ptt_145, low);
+  gpioSetValue(ptt_437, low);
+  gpioSetValue(ptt_1255, low);
+  gpioSetValue(rx_tnt, low);
 
 }
 
@@ -367,8 +369,10 @@ usleep(100);
           verbprintf(0,"TX 145.9MHz SR125\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "7");
           usleep(100);
           TX_145=1;
+          band_select();
           TX=1;
           emission=1;
           system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
@@ -377,7 +381,7 @@ usleep(100);
           vocal();
         }
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 1) && (Cod>0)) // Code *02
     {
@@ -388,8 +392,10 @@ usleep(100);
           verbprintf(0,"TX 145.9MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
           usleep(100);
           TX_145=1;
+          band_select();
           TX=2;
           emission=1;
           system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
@@ -398,7 +404,7 @@ usleep(100);
           vocal();
         }
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 2) && (Cod>0)) // Code *03
     {
@@ -409,8 +415,10 @@ usleep(100);
           verbprintf(0,"TX 437MHz SR125\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "7");
           usleep(100);
           TX_437=1;
+          band_select();
           TX=3;
           emission=1;
           system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
@@ -419,7 +427,7 @@ usleep(100);
           vocal();
         }
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 4) && (Cod>0)) // Code *04
     {
@@ -430,8 +438,10 @@ usleep(100);
           verbprintf(0,"TX 437MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
           usleep(100);
           TX_437=1;
+          band_select();
           TX=4;
           emission=1;
           system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
@@ -440,20 +450,45 @@ usleep(100);
           vocal();
         }
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 5) && (Cod>0)) // Code *05
     {
+      if (RX_437 == 0){
+        if (TX != 5){
+          TX_LOW();
+          usleep(500);
+          verbprintf(0,"TX 437MHz SR500\n");
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "500");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "1");
+          usleep(100);
+          TX_437=1;
+          band_select();
+          TX=5;
+          emission=1;
+          system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          top=time(NULL);
+          topPTT=time(NULL);
+          vocal();
+        }
+      }
+      else erreur();
+    }
+    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 6) && (Cod>0)) // Code *06
+    {
       if (RX_1255 == 0){
-        if (TX != 4){
+        if (TX != 6){
           TX_LOW();
           usleep(500);
           verbprintf(0,"TX 1255MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "1255");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
           usleep(100);
           TX_1255=1;
-          TX=4;
+          band_select();
+          TX=6;
           emission=1;
           system("/home/$USER/jetson_datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
@@ -461,17 +496,7 @@ usleep(100);
           vocal();
         }
       }
-    else erreur();
-    }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 6) && (Cod>0)) // Code *06
-    {
-      //TX_LOW();
-      //usleep(500);
-      verbprintf(0,"RESERVE\n");
-      //TX=5;
-      //top=time(NULL);;
-      //topPTT=time(NULL);
-      //vocal();
+      else erreur();
     }
 
 //////////////////////////////////////// RX ////////////////////////////////////////
@@ -486,8 +511,8 @@ usleep(100);
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_145=1;
+        band_select();
         RX=1;
-        gpioSetValue(ant_145, low);
         vocal();
       }
     else erreur();
@@ -503,8 +528,8 @@ usleep(100);
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_145=1;
+        band_select();
         RX=2;
-        gpioSetValue(ant_145, low);
         vocal();
       }
     else erreur();
@@ -520,8 +545,8 @@ usleep(100);
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_437=1;
+        band_select();
         RX=3;
-        gpioSetValue(ant_437, low);
         vocal();
       }
     else erreur();
@@ -537,8 +562,8 @@ usleep(100);
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_437=1;
+        band_select();
         RX=4;
-        gpioSetValue(ant_437, low);
         vocal();
       }
     }
@@ -553,8 +578,8 @@ usleep(100);
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/jetson_datv_repeater/longmynd/full_rx &'");
         RX_1255=1;
+        band_select();
         RX=5;
-        gpioSetValue(ant_1255, low);
         vocal();
       }
     else erreur();
@@ -568,9 +593,10 @@ usleep(100);
         system("echo 'OUTB_1'>/dev/ttyUSB0");
         verbprintf(0,"RX 437MHz TNT\n");
         RX_437=1;
+        //band_select();
         RX=6;
         //gpioSetValue(ant_437, low);
-        gpioSetValue(rx_tnt, low);
+        gpioSetValue(rx_tnt, high);
         vocal();
       }
     else erreur();
@@ -589,26 +615,34 @@ usleep(100);
     {
       RX_LOW();
       usleep(500);
+      system("echo 'OUTA_4'>/dev/ttyUSB0");
+      system("echo 'OUTB_4'>/dev/ttyUSB0");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"MULTI-VIDEOS\n");
       RX=8;
       vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 9) && (Cod>0)) // Code *18
     {
-      //RX_LOW();
-      //usleep(500);
+      RX_LOW();
+      usleep(500);
       system("echo 'OUTA_2'>/dev/ttyUSB0");
       system("echo 'OUTB_2'>/dev/ttyUSB0");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"RESERVE\n");
       RX=9;
       vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 10) && (Cod>0)) // Code *19
     {
-      //RX_LOW();
-      //usleep(500);
+      RX_LOW();
+      usleep(500);
       system("echo 'OUTA_3'>/dev/ttyUSB0");
       system("echo 'OUTB_3'>/dev/ttyUSB0");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"RESERVE\n");
       RX=10;
       vocal();
@@ -619,6 +653,8 @@ usleep(100);
       usleep(500);
       system("echo 'OUTA_4'>/dev/ttyUSB0");
       system("echo 'OUTB_4'>/dev/ttyUSB0");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
+      system("/home/$USER/jetson_datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"CAMERA\n");
       RX=11;
       vocal();
@@ -660,16 +696,40 @@ void tempo_TX(void)
     }
 }
 
+void band_select(void)
+{
+  if ((TX_145 == 1) || (RX_145 == 1))
+  {
+    gpioSetValue(band_bit0, high);
+    gpioSetValue(band_bit1, low);
+  }
+  else if ((TX_437 == 1) || (RX_437 == 1))
+  {
+    gpioSetValue(band_bit0, low);
+    gpioSetValue(band_bit1, high);
+  }
+  else if ((TX_1255 == 1) || (RX_1255 == 1))
+  {
+    gpioSetValue(band_bit0, high);
+    gpioSetValue(band_bit1, high);
+  }
+  else
+  {
+    gpioSetValue(band_bit0, low);
+    gpioSetValue(band_bit1, low);
+  }
+}
+
 void Ptt(void)
 {
   if ((TX != 0) && (TX_On == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
   {
     if (TX_145 == 1)
-      gpioSetValue(ptt_145, low);
+      gpioSetValue(ptt_145, high);
     else if (TX_437 == 1)
-      gpioSetValue(ptt_437, low);
+      gpioSetValue(ptt_437, high);
     else if (TX_1255 == 1)
-      gpioSetValue(ptt_1255, low);
+      gpioSetValue(ptt_1255, high);
     TX_On=1;
   }
 }
@@ -687,15 +747,15 @@ void TX_LOW(void)
   //digitalWrite (PTT_UHF, HIGH);
   //digitalWrite (PTT_VHF, HIGH);
   //digitalWrite (PTT_1255, HIGH);
-  gpioSetValue(ptt_145, high);
-  gpioSetValue(ptt_437, high);
-  gpioSetValue(ptt_1255, high);
+  gpioSetValue(ptt_145, low);
+  gpioSetValue(ptt_437, low);
+  gpioSetValue(ptt_1255, low);
   emission=0;
   freq1=0;
   freq2=0;
   freq3=0;
-  TX_437=0;
   TX_145=0;
+  TX_437=0;
   TX_1255=0;
   TX=0;
   TX_On=0;
@@ -714,124 +774,121 @@ void RX_LOW(void)
   //digitalWrite (RX_1255_FM, HIGH);
   //digitalWrite (RX_438_AM, HIGH);
   //digitalWrite (CAMERA, HIGH);
-  gpioSetValue(rx_tnt, high);
-  gpioSetValue(ant_145, high);
-  gpioSetValue(ant_437, high);
-  gpioSetValue(ant_1255, high);
-  RX_437=0;
+  gpioSetValue(rx_tnt, low);
   RX_145=0;
+  RX_437=0;
   RX_1255=0;
   RX=0;
 }
 
 void vocal(void) {
 
-  gpioSetValue(ptt_vocal, low);
+  gpioSetValue(ptt_vocal, high);
 
   usleep(400);
 
   if (TX == 1)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/01.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/01.wav");
   }
 
   if (TX == 2)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/02.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/02.wav");
   }
 
   if (TX == 3)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/03.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/03.wav");
   }
 
   if (TX == 4)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/04.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/04.wav");
   }
 
   if (TX == 5)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/05.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/05.wav");
   }
 
   if (TX == 6)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/06.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/06.wav");
   }
 
   if (RX == 1)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/10.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/10.wav");
   }
 
   if (RX == 2)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/11.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/11.wav");
   }
 
   if (RX == 3)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/12.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/12.wav");
   }
 
   if (RX == 4)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/13.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/13.wav");
   }
 
   if (RX == 5)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/14.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/14.wav");
   }
 
   if (RX == 6)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/15.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/15.wav");
   }
 
   if (RX == 7)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/16.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/16.wav");
   }
 
   if (RX == 8)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/17.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/17.wav");
   }
 
   if (RX == 9)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/18.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/18.wav");
   }
 
   if (RX == 10)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/19.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/19.wav");
   }
 
   if (RX == 11)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/20.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/20.wav");
   }
 
   if (RX == 12)
   {
-    system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/21.wav");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/21.wav");
   }
 
   usleep(200);
 
-  gpioSetValue(ptt_vocal, high);
+  gpioSetValue(ptt_vocal, low);
 }
 
 void erreur(void) {
   usleep(500);
-  gpioSetValue(ptt_vocal, low);
-  usleep(300);
-  system("aplay -Dhw:CARD=Device,DEV=0 --quiet /home/$USER/jetson_datv_repeater/son/erreur.wav");
-  usleep(200);
   gpioSetValue(ptt_vocal, high);
+  usleep(300);
+  system("aplay -D plughw:2,0 --quiet /home/$USER/jetson_datv_repeater/son/erreur.wav");
+  usleep(200);
+  gpioSetValue(ptt_vocal, low);
 }
 
 /* ---------------------------------------------------------------------- */

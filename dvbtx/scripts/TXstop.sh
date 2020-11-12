@@ -27,6 +27,7 @@ JETSONPW=$(get_config_var jetsonpw $PATH_PCONFIG_TX)
   killall gst-launch-1.0 >/dev/null 2>/dev/null
   killall ffmpeg >/dev/null 2>/dev/null
   killall limesdr_dvb >/dev/null 2>/dev/null
+  sleep 1
   /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
 ENDSSH
 ) &
