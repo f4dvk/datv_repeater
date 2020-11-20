@@ -1,0 +1,7 @@
+call=F5ZBC
+jetsonip=192.168.0.40
+jetsonuser=jetson
+jetsonpw=nano
+camip=192.168.0.37
+camusr=admin
+campw=admin

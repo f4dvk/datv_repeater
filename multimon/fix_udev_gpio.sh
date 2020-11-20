@@ -4,15 +4,15 @@
 # /sys/class/gpio directory, so that gpio could be accessed by non-root
 # users in the "gpio" group.
 
-chown -R root.gpio /sys/class/gpio
-chmod 0220 /sys/class/gpio/export
-chmod 0220 /sys/class/gpio/unexport
+sudo chown -R root.gpio /sys/class/gpio
+sudo chmod 0220 /sys/class/gpio/export
+sudo chmod 0220 /sys/class/gpio/unexport
 
-chown root.gpio /sys/class/gpio/*/direction
-chown root.gpio /sys/class/gpio/*/edge
-chown root.gpio /sys/class/gpio/*/value
-chown root.gpio /sys/class/gpio/*/active_low
-chmod 0664 /sys/class/gpio/*/direction
-chmod 0664 /sys/class/gpio/*/edge
-chmod 0664 /sys/class/gpio/*/value
-chmod 0664 /sys/class/gpio/*/active_low
+sudo chown root.gpio /sys/class/gpio/*/direction
+sudo chown root.gpio /sys/class/gpio/*/edge
+sudo chown root.gpio /sys/class/gpio/*/value
+sudo chown root.gpio /sys/class/gpio/*/active_low
+sudo chmod 0664 /sys/class/gpio/*/direction
+sudo chmod 0664 /sys/class/gpio/*/edge
+sudo chmod 0664 /sys/class/gpio/*/value
+sudo chmod 0664 /sys/class/gpio/*/active_low

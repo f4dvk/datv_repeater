@@ -76,7 +76,7 @@ int main() {
     const char* user = getenv("USER");
     char path[511];
 
-    snprintf(path, 511, "/home/%s/longmynd/config.txt", user);
+    snprintf(path, 511, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
     #define PATH_PCONFIG path
 
     int num;
@@ -129,12 +129,12 @@ int main() {
     }
 
     /* Open status FIFO for read only  */
-    system("sudo rm /home/$USER/longmynd/longmynd_main_status >/dev/null 2>/dev/null");
-    system("sudo rm /home/$USER/longmynd/longmynd_main_ts >/dev/null 2>/dev/null");
+    system("sudo rm /home/$USER/jetson_datv_repeater/longmynd/longmynd_main_status >/dev/null 2>/dev/null");
+    system("sudo rm /home/$USER/jetson_datv_repeater/longmynd/longmynd_main_ts >/dev/null 2>/dev/null");
     ret=mkfifo("longmynd_main_status", 0666);
     ret=mkfifo("longmynd_main_ts", 0666);
 
-    snprintf(Command, 530, "sudo /home/$USER/longmynd/longmynd -i %s %s %s -g %s -S %s %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
+    snprintf(Command, 530, "sudo /home/$USER/jetson_datv_repeater/longmynd/longmynd -i %s %s %s -g %s -S %s %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
     system(Command);
 
     fd_status_fifo = open("longmynd_main_status", O_RDONLY);

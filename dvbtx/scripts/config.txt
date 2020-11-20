@@ -1,4 +1,3 @@
-call=F5ZBC
 freq=437
 symbolrate=125
 fec=7
@@ -7,6 +6,3 @@ constellation=QPSK
 gain=92
 upsample=4
 codec=H264
-jetsonip=192.168.0.40
-jetsonuser=jetson
-jetsonpw=nano

@@ -10,6 +10,8 @@ sudo apt-get update
 sudo apt-get -y dist-upgrade
 sudo apt-get -y install apt-utils
 sudo apt-get -y install nano
+sudo apt-get -y install gst-1.0
+sudo apt-get -y install libpulse-dev # multimon
 sudo apt-get -y install mpv # longmynd
 sudo apt-get -y install libasound2-dev # longmynd
 sudo apt-get -y install lua5.3 # pour la fonction SH get_config_var
@@ -45,6 +47,10 @@ cmake ..
 make
 sudo make install
 
+cd /home/$USER/jetson_datv_repeater/multimon
+./setup_gpio.sh
+./fix_udev_gpio.sh
+
 echo
 echo "-----------------------------------------------------"
 echo "----------- Installation de la partie TX ------------"
@@ -67,6 +73,9 @@ cd /home/$USER
 
 # désactivation transparence du terminal
 dconf write /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/use-theme-transparency false
+
+# Suppression du curseur dans le terminal
+setterm -cursor off
 
 # Démarrage automatique
 #if [ "$1" == "-l" ]; then

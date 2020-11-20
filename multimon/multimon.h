@@ -110,6 +110,7 @@ void erreur(void);
 void initGPIO(void);
 void exportGPIO(void);
 void unexportGPIO(void);
+void band_select(void);
 
 /* ---------------------------------------------------------------------- */
 #endif /* _MULTIMON_H */

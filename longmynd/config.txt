@@ -1,10 +1,10 @@
 freq=437000
 symbolrate=250
 input=a
-gain=10
+gain=0
 scan=20
 texte=0
 ip=127.0.0.5
 port=1243
-player=0
+player=1
 quiet=0

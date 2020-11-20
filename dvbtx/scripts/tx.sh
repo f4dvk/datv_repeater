@@ -3,6 +3,7 @@
 # Le pilotage du TX se fait en SSH
 
 PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
+PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
@@ -20,8 +21,8 @@ end
 EOF
 }
 
-CHANNEL=Digital_TV
-CALL=$(get_config_var call $PATH_PCONFIG_TX)
+CHANNEL="Relais_de_SOISSONS(02)"
+CALL=$(get_config_var call $PATH_PCONFIG_USR)
 FREQ=$(get_config_var freq $PATH_PCONFIG_TX)
 SYMBOLRATE=$(get_config_var symbolrate $PATH_PCONFIG_TX)
 FEC=$(get_config_var fec $PATH_PCONFIG_TX)
@@ -30,11 +31,9 @@ CONSTELLATION=$(get_config_var constellation $PATH_PCONFIG_TX)
 GAIN=$(get_config_var gain $PATH_PCONFIG_TX)
 UPSAMPLE=$(get_config_var upsample $PATH_PCONFIG_TX)
 CODEC=$(get_config_var codec $PATH_PCONFIG_TX)
-JETSONIP=$(get_config_var jetsonip $PATH_PCONFIG_TX)
-JETSONUSER=$(get_config_var jetsonuser $PATH_PCONFIG_TX)
-JETSONPW=$(get_config_var jetsonpw $PATH_PCONFIG_TX)
-IPADRESS=$(hostname -I | cut -d" " -f1)
-PORT=10001
+JETSONIP=$(get_config_var jetsonip $PATH_PCONFIG_USR)
+JETSONUSER=$(get_config_var jetsonuser $PATH_PCONFIG_USR)
+JETSONPW=$(get_config_var jetsonpw $PATH_PCONFIG_USR)
 
 AUDIO_BITRATE=20000
 VIDEO_GOP=100
