@@ -5,12 +5,14 @@ echo "-----------------------------------------------------"
 echo "--------- Installation jetson_datv_repeater ---------"
 echo "-----------------------------------------------------"
 
-sudo apt-get -y install dkms
 sudo apt-get update
+sudo apt-get -y dist-upgrade
+sudo apt-get -y install dkms
 sudo apt-get -y dist-upgrade
 sudo apt-get -y install apt-utils
 sudo apt-get -y install nano
 sudo apt-get -y install gst-1.0
+sudo apt-get -y install libasound2-dev sox # avc2ts Audio
 sudo apt-get -y install libpulse-dev # multimon
 sudo apt-get -y install mpv # longmynd
 sudo apt-get -y install libasound2-dev # longmynd
@@ -18,6 +20,8 @@ sudo apt-get -y install lua5.3 # pour la fonction SH get_config_var
 sudo apt-get -y install sshpass
 # Installation lecteur image (image de fond).
 sudo apt-get -y install pqiv # longmynd
+#sudo apt-get -y install vlc-bin # cvlc
+sudo apt-get -y install mplayer
 
 mkdir /home/$USER/tmp # pour sshpass
 

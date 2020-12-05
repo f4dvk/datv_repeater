@@ -244,27 +244,27 @@ int main() {
               {
                 case 0:
                   strcpy(FECtext, "FEC 1/2");
-                  MERThreshold = 0; //
+                  MERThreshold = 1.7; //
                 break;
                 case 1:
                   strcpy(FECtext, "FEC 2/3");
-                  MERThreshold = 0; //
+                  MERThreshold = 3.3; //
                 break;
                 case 2:
                   strcpy(FECtext, "FEC 3/4");
-                  MERThreshold = 0; //
+                  MERThreshold = 4.2; //
                 break;
                 case 3:
                   strcpy(FECtext, "FEC 5/6");
-                  MERThreshold = 0; //
+                  MERThreshold = 5.1; //
                 break;
                 case 4:
                   strcpy(FECtext, "FEC 6/7");
-                  MERThreshold = 0; //
+                  MERThreshold = 5.5; //
                 break;
                 case 5:
                   strcpy(FECtext, "FEC 7/8");
-                  MERThreshold = 0; //
+                  MERThreshold = 5.8; //
                 break;
                 default:
                   strcpy(FECtext, "FEC - ");

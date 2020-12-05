@@ -10,6 +10,7 @@ Source pour l'accès aux GPIO:
 https://github.com/jkjung-avt/dqn-tx1-for-nintendo/tree/master/gpio/non_root
 
 Source pour la partie TX:  
+https://github.com/F5OEO/avc2ts
 https://github.com/F5OEO/limesdr_toolbox
 
 Sources pour la partie RX:  
@@ -20,6 +21,8 @@ https://github.com/myorangedragon/longmynd
 Matériel:  
 Jetson Nano 4GB:  
 https://www.nvidia.com/fr-fr/autonomous-machines/jetson-store/  
+Raspberry PI 2:  
+https://www.amazon.fr/gp/product/B07TC2BK1X/ref=ppx_yo_dt_b_asin_title_o09_s00?ie=UTF8&psc=1  
 Commutateur HDMI:  
 https://fr.aliexpress.com/item/32800015864.html?spm=a2g0s.9042311.0.0.27426c37iRszgf  
 Arduino Nano:  
@@ -33,5 +36,5 @@ https://fr.aliexpress.com/item/4001021570814.html?spm=a2g0s.9042311.0.0.27426c37
 Minitiouner:  
 https://boutique.r-e-f.org/kits-et-composants/205-minitiounerpro-avec-nim.html  
 
-Deux Jetson Nano; un RX, commande DTMF et l'autre TX avec pilotage en SSH  
+Un Jetson Nano, RX, commande DTMF et un Raspberry PI 4 TX avec pilotage en SSH  
 Programme en cours de développement...

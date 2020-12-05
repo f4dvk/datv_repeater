@@ -68,7 +68,6 @@ int DTMF=0;
 int OK=false;
 int Cod=0;
 int Cd;
-int New=0;
 
 ///////////////// COMMANDE /////////////////
 int emission,val_RX_DATV,freq1,freq2,freq3,RX_437,RX_145,RX_1255,TX_437,TX_145,TX_1255;
@@ -295,39 +294,36 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 			if (i != s->l1.dtmf.lastch && i >= 0){
 				DTMF=i;
 				verbprintf(0, "DTMF: %c\n", dtmf_transl[i]);
+				if ((DTMF == 12) || (DTMF == 3) || (DTMF == 11)) (OK = true);
+
+				if (OK == true){
+					Cod++;                                           // Incrementation du compteur curseur (seconde ligne)
+					topD=time(NULL);
+
+					Buffer[Cod] = DTMF;
+
+					if ((DTMF == 3) || (DTMF == 11)){
+						Cd = 1;
+						DTMF=0;
+					}
+					else if (DTMF == 12){
+						Cd = 3;
+						DTMF=0;}
+
+					if (Cod == Cd) {
+						Commande();
+						//verbprintf(0,"Execution d'une commande\n");
+						Cd=0;
+						Cod=0;
+						OK=false;
+						DTMF=0;
+					}
+				}
 				//verbprintf(0,"Valeur: %d\n", DTMF);
-				New=1;
 			}
 			s->l1.dtmf.lastch = i;
 		}
 	}
-
-  if ((DTMF == 12) || (DTMF == 3) || (DTMF == 11)) (OK = true);
-
-  if ((OK == true) && (New == 1)){
-    Cod++;                                           // Incrementation du compteur curseur (seconde ligne)
-    topD=time(NULL);
-
-    Buffer[Cod] = DTMF;
-    New=0;
-
-    if ((DTMF == 3) || (DTMF == 11)){
-      Cd = 1;
-      DTMF=0;
-    }
-    else if (DTMF == 12){
-      Cd = 3;
-      DTMF=0;}
-
-    if (Cod == Cd) {
-      Commande();
-      //verbprintf(0,"Execution d'une commande\n");
-      Cd=0;
-      Cod=0;
-      OK=false;
-      DTMF=0;
-    }
-  }
 }
 
 void tempo_dtmf(void)
@@ -365,7 +361,7 @@ usleep(100);
       if (RX_145 == 0){
         if (TX != 1){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 145.9MHz SR125\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
@@ -388,7 +384,7 @@ usleep(100);
       if (RX_145 == 0){
         if (TX != 2){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 145.9MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
@@ -411,7 +407,7 @@ usleep(100);
       if (RX_437 == 0){
         if (TX != 3){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 437MHz SR125\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
@@ -434,7 +430,7 @@ usleep(100);
       if (RX_437 == 0){
         if (TX != 4){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 437MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
@@ -457,7 +453,7 @@ usleep(100);
       if (RX_437 == 0){
         if (TX != 5){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 437MHz SR500\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "500");
@@ -480,7 +476,7 @@ usleep(100);
       if (RX_1255 == 0){
         if (TX != 6){
           TX_LOW();
-          usleep(500);
+          usleep(800);
           verbprintf(0,"TX 1255MHz SR250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "1255");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");

@@ -134,7 +134,7 @@ uint8_t ftdi_usb_i2c_write( uint8_t *buffer, uint8_t len ){
 /* -------------------------------------------------------------------------------------------------- */
 uint8_t ftdi_usb_i2c_read( uint8_t **buffer) {
 /* -------------------------------------------------------------------------------------------------- */
-/* reads one byte from the usb and returns it. Keeping any other data bytes for later                 */ 
+/* reads one byte from the usb and returns it. Keeping any other data bytes for later                 */
 /* Note: we only ever need to read one byte of actual data so we can avoid data copying by using the  */
 /* internal buffers of the usb reads to keep the data                                                 */
 /* *buffer: iretruned as a pointer the the actual data read into the usb                              */
@@ -192,7 +192,7 @@ static uint8_t ftdi_usb_set_mpsse_mode(libusb_device_handle *_device_handle){
                                             SIO_RESET_PURGE_RX, 1, NULL, 0, USB_TIMEOUT))<0) {
         printf("ERROR: USB RX Purge failed %d",res);
         err=ERROR_MPSSE;
-    }   
+    }
 
     /* clear out the transmit buffers */
     if ((res=libusb_control_transfer(_device_handle, FTDI_DEVICE_OUT_REQTYPE, SIO_RESET_REQUEST,
@@ -265,7 +265,7 @@ static uint8_t ftdi_usb_init(libusb_context **usb_context_ptr, libusb_device_han
 
     /* turn on debug */
     #if LIBUSB_API_VERSION >= 0x01000106
-    libusb_set_option(*usb_context_ptr, LIBUSB_LOG_LEVEL_INFO);
+    libusb_set_option(*usb_context_ptr, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
     #else
     libusb_set_debug(*usb_context_ptr, LIBUSB_LOG_LEVEL_INFO);
     #endif
@@ -281,7 +281,7 @@ static uint8_t ftdi_usb_init(libusb_context **usb_context_ptr, libusb_device_han
 
     /* if  we are finding by usb device number then we have to take a look at the IDs to check we are */
     /* being asked to open the right one. sTto do this we get a list of all the USB devices on the system */
-    } else if (err==ERROR_NONE) { 
+    } else if (err==ERROR_NONE) {
         printf("Flow: Searching for bus/device=%i,%i\n",usb_bus,usb_addr);
         count=libusb_get_device_list(*usb_context_ptr, &usb_device_list);
         if (count<=0) {
