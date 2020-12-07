@@ -21,7 +21,7 @@ https://github.com/myorangedragon/longmynd
 Matériel:  
 Jetson Nano 4GB:  
 https://www.nvidia.com/fr-fr/autonomous-machines/jetson-store/  
-Raspberry PI 2:  
+Raspberry PI 4:  
 https://www.amazon.fr/gp/product/B07TC2BK1X/ref=ppx_yo_dt_b_asin_title_o09_s00?ie=UTF8&psc=1  
 Commutateur HDMI:  
 https://fr.aliexpress.com/item/32800015864.html?spm=a2g0s.9042311.0.0.27426c37iRszgf  

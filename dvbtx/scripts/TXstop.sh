@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
+PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
@@ -18,13 +18,13 @@ end
 EOF
 }
 
-RPIIP=$(get_config_var jetsonip $PATH_PCONFIG_TX)
-RPIUSER=$(get_config_var jetsonuser $PATH_PCONFIG_TX)
-RPIPW=$(get_config_var jetsonpw $PATH_PCONFIG_TX)
+RPIIP=$(get_config_var jetsonip $PATH_PCONFIG_USR)
+RPIUSER=$(get_config_var jetsonuser $PATH_PCONFIG_USR)
+RPIPW=$(get_config_var jetsonpw $PATH_PCONFIG_USR)
 
 /bin/cat <<EOM >$CMDFILE
-(sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$JETSONIP 'bash -s' <<'ENDSSH'
-  /home/pi/TXstop_rpi.sh >/dev/null 2>/dev/null
+(sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
+  /home/pi/dvbtx/scripts/TXstop_rpi.sh >/dev/null 2>/dev/null &
 ENDSSH
 ) &
 EOM

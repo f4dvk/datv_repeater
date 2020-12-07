@@ -1,8 +1,8 @@
 call=F5ZBC
 format=16:9
-rpiip=192.168.0.40
-rpiuser=jetson
-rpipw=nano
+rpiip=192.168.0.12
+rpiuser=pi
+rpipw=raspberry
 camip=192.168.0.37
 camusr=admin
 campw=admin

@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Le pilotage du TX se fait en SSH
-
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/scripts/dvbtx/config.txt"
-PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
-CMDFILE="/home/$USER/tmp/jetson_command.txt"
+PATH_PCONFIG_TX="/home/pi/jetson_datv_repeater/dvbtx/scripts/config_rpi.txt"
+PATHBIN="/home/pi/jetson_datv_repeater/dvbtx/bin"
 
 get_config_var() {
 lua - "$1" "$2" <<EOF
@@ -22,19 +19,30 @@ EOF
 }
 
 CHANNEL="Relais_de_SOISSONS(02)"
-CALL=$(get_config_var call $PATH_PCONFIG_USR)
+CALL=$(get_config_var call $PATH_PCONFIG_TX)
 FREQ=$(get_config_var freq $PATH_PCONFIG_TX)
 SYMBOLRATE=$(get_config_var symbolrate $PATH_PCONFIG_TX)
 FEC=$(get_config_var fec $PATH_PCONFIG_TX)
 MODE=$(get_config_var mode $PATH_PCONFIG_TX)
 CONSTELLATION=$(get_config_var constellation $PATH_PCONFIG_TX)
-FORMAT=$(get_config_var format $PATH_PCONFIG_USR)
+FORMAT=$(get_config_var format $PATH_PCONFIG_TX)
 GAIN=$(get_config_var gain $PATH_PCONFIG_TX)
 UPSAMPLE=$(get_config_var upsample $PATH_PCONFIG_TX)
 CODEC=$(get_config_var codec $PATH_PCONFIG_TX)
-RPIIP=$(get_config_var rpiip $PATH_PCONFIG_USR)
-RPIUSER=$(get_config_var rpiuser $PATH_PCONFIG_USR)
-RPIPW=$(get_config_var rpipw $PATH_PCONFIG_USR)
+
+PILOT=$(get_config_var pilots $PATH_PCONFIG_TX)
+if [ "$PILOT" == "on" ]; then
+  PILOTS="-p"
+else
+  PILOTS=""
+fi
+
+FRAME=$(get_config_var frames $PATH_PCONFIG_TX)
+if [ "$FRAME" == "short" ]; then
+  FRAMES="-v"
+else
+  FRAMES=""
+fi
 
 AUDIO_BITRATE=24000
 PCR_PTS=300 # 200 ?
@@ -86,7 +94,7 @@ case "$FEC" in
 esac
 
 # Bitrate
-BITRATE_TS=$(/home/$USER/dvbtx/dvb2iq -s $SYMBOLRATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
+BITRATE_TS=$($PATHBIN"/dvb2iq" -s $SYMBOLRATE -f $FECNUM"/"$FECDEN -d -m $MODE -c $CONSTELLATION $PILOTS $FRAMES )
 let TS_AUDIO_BITRATE=AUDIO_BITRATE*15/10
 let VIDEOBITRATE=(BITRATE_TS-24000-TS_AUDIO_BITRATE)*725/1000
 let VIDEOPEAKBITRATE=VIDEOBITRATE*110/100
@@ -114,24 +122,17 @@ if [ "$FORMAT" == "16:9" ]; then
   VIDEO_HEIGHT=400
 fi
 
-/bin/cat <<EOM >$CMDFILE
-    (sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
-    sudo rm videots >/dev/null 2>/dev/null
-    sudo rm audioin.wav >/dev/null 2>/dev/null
-    mkfifo videots
-    mkfifo audioin.wav
-    v4l2-ctl --device=/dev/video0 --set-fmt-video=width=720,height=480,pixelformat=1 --set-parm=30
-    /home/pi/dvbtx/limesdr_dvb -i videots -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $TYPE_FRAMES \
-      -t "$FREQ"e6 -g $LIME_GAINF -q 1 &
-    arecord -f S16_LE -r 48000 -c 2 -B 55000 -D plughw:1 \
-      | sox -c 1 --buffer 1024 -t wav - audioin.wav rate 46500 &
-    sudo /home/pi/dvbtx/avc2ts -b $VIDEOBITRATE -m $BITRATE_TS -d $PCR_PTS -x $VIDEO_RESX -y $VIDEO_RESY \
-      -f $VIDEO_FPS -i $IDR -o videots -t 2 -e /dev/video0 -p 255 -s $CALL \
-      -a audioin.wav -z $AUDIO_BITRATE > /dev/null &
-ENDSSH
-      ) &
-EOM
-
-source "$CMDFILE"
+sudo rm videots >/dev/null 2>/dev/null
+sudo rm audioin.wav >/dev/null 2>/dev/null
+mkfifo videots
+mkfifo audioin.wav
+v4l2-ctl --device=/dev/video0 --set-fmt-video=width=720,height=480,pixelformat=1 --set-parm=30
+$PATHBIN"/limesdr_dvb" -i videots -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+-t "$FREQ"e6 -g $LIME_GAINF -q 1 &
+arecord -f S16_LE -r 48000 -c 2 -B 55000 -D plughw:1 \
+| sox -c 1 --buffer 1024 -t wav - audioin.wav rate 46500 &
+sudo $PATHBIN"/avc2ts" -b $VIDEOBITRATE -m $BITRATE_TS -d $PCR_PTS -x $VIDEO_RESX -y $VIDEO_RESY \
+-f $VIDEO_FPS -i $IDR -o videots -t 2 -e /dev/video0 -p 255 -s $CALL \
+-a audioin.wav -z $AUDIO_BITRATE > /dev/null &
 
 exit

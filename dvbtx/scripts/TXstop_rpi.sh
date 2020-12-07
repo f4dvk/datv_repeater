@@ -23,7 +23,7 @@ sudo killall -9 limesdr_dvb >/dev/null 2>/dev/null
 sudo killall -9 sox >/dev/null 2>/dev/null
 
 # Reset the LimeSDR
-/home/pi/bin/limesdr_stopchannel >/dev/null 2>/dev/null
+/home/pi/jetson_datv_repeater/dvbtx/bin/limesdr_stopchannel >/dev/null 2>/dev/null
 # Stop the audio for CompVid mode
 sudo killall arecord >/dev/null 2>/dev/null
 

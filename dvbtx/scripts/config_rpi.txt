@@ -1,8 +1,10 @@
+call=F5ZBC
 freq=437
 symbolrate=125
 fec=7
 mode=DVBS
 constellation=QPSK
+format=16:9
 gain=92
 upsample=4
 codec=H264

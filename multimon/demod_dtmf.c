@@ -682,7 +682,7 @@ usleep(100);
 void tempo_TX(void)
 {
     if ((emission == 1) && (((unsigned long)difftime(Time, top)) > delai_TX*60)){
-      verbprintf(0,"Tempo de fin TX");
+      verbprintf(0,"Tempo de fin TX\n");
       TX_LOW();
       RX_LOW();
       usleep(500);
