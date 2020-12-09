@@ -22,6 +22,7 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   sudo apt-get -y install pqiv # longmynd
   #sudo apt-get -y install vlc-bin # cvlc
   sudo apt-get -y install mplayer
+  sudo apt-get -y install vlc
 
   mkdir /home/$USER/tmp # pour sshpass
 

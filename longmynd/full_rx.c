@@ -15,7 +15,6 @@ char Sr[5];
 char Gain[3];
 char Scan[5];
 char In[3];
-char TXT[2];
 char IP[10];
 char Port[5];
 char Player[2];
@@ -113,7 +112,6 @@ int main() {
     GetConfigParam(PATH_PCONFIG,"input", In);
     GetConfigParam(PATH_PCONFIG,"gain", Gain);
     GetConfigParam(PATH_PCONFIG,"scan", Scan);
-    GetConfigParam(PATH_PCONFIG,"texte", TXT);
     GetConfigParam(PATH_PCONFIG,"ip", IP);
     GetConfigParam(PATH_PCONFIG,"port", Port);
     GetConfigParam(PATH_PCONFIG,"player", Player);
@@ -144,7 +142,8 @@ int main() {
 
     if (strcmp(Player, "1") == 0)
     {
-      snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
+      //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
+      snprintf(Command, 530, "ffplay -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8','drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
       system(Command);
     }
 
@@ -176,9 +175,11 @@ int main() {
               }
               if ((((unsigned long)difftime(Time, top)) > delai_reset) && (LCK == 2) && (strcmp(Player, "1") == 0))
               {
-                system("sudo killall mpv >/dev/null 2>/dev/null");
+                //system("sudo killall mpv >/dev/null 2>/dev/null");
+                system("sudo killall ffplay >/dev/null 2>/dev/null");
                 usleep(300);
-                snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
+                //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
+                snprintf(Command, 530, "ffplay -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8','drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
                 system(Command);
                 LCK=0;
               }
@@ -187,11 +188,11 @@ int main() {
               strcpy(STATEtext, "Found Headers");
               break;
               case 3:
-              strcpy(STATEtext, "DVB-S Lock");
+              strcpy(STATEtext, "DVB-S");
               LCK=1;
               break;
               case 4:
-              strcpy(STATEtext, "DVB-S2 Lock");
+              strcpy(STATEtext, "DVB-S2");
               LCK=1;
               break;
               default:
@@ -244,31 +245,31 @@ int main() {
               {
                 case 0:
                   strcpy(FECtext, "FEC 1/2");
-                  MERThreshold = 1.7; //
+                  MERThreshold = 01.7; //
                 break;
                 case 1:
                   strcpy(FECtext, "FEC 2/3");
-                  MERThreshold = 3.3; //
+                  MERThreshold = 03.3; //
                 break;
                 case 2:
                   strcpy(FECtext, "FEC 3/4");
-                  MERThreshold = 4.2; //
+                  MERThreshold = 04.2; //
                 break;
                 case 3:
                   strcpy(FECtext, "FEC 5/6");
-                  MERThreshold = 5.1; //
+                  MERThreshold = 05.1; //
                 break;
                 case 4:
                   strcpy(FECtext, "FEC 6/7");
-                  MERThreshold = 5.5; //
+                  MERThreshold = 05.5; //
                 break;
                 case 5:
                   strcpy(FECtext, "FEC 7/8");
-                  MERThreshold = 5.8; //
+                  MERThreshold = 05.8; //
                 break;
                 default:
                   strcpy(FECtext, "FEC - ");
-                  MERThreshold = 0; //
+                  MERThreshold = 00.0; //
                   strcat(FECtext, MODCODtext);
                 break;
               }
@@ -292,55 +293,55 @@ int main() {
                 break;
                 case 4:
                   strcpy(FECtext, "FEC 1/2");
-                  MERThreshold = 1.0; //
+                  MERThreshold = 01.0; //
                 break;
                 case 5:
                   strcpy(FECtext, "FEC 3/5");
-                  MERThreshold = 2.3; //
+                  MERThreshold = 02.3; //
                 break;
                 case 6:
                   strcpy(FECtext, "FEC 2/3");
-                  MERThreshold = 3.1; //
+                  MERThreshold = 03.1; //
                 break;
                 case 7:
                   strcpy(FECtext, "FEC 3/4");
-                  MERThreshold = 4.1; //
+                  MERThreshold = 04.1; //
                 break;
                 case 8:
                   strcpy(FECtext, "FEC 4/5");
-                  MERThreshold = 4.7; //
+                  MERThreshold = 04.7; //
                 break;
                 case 9:
                   strcpy(FECtext, "FEC 5/6");
-                  MERThreshold = 5.2; //
+                  MERThreshold = 05.2; //
                 break;
                 case 10:
                   strcpy(FECtext, "FEC 8/9");
-                  MERThreshold = 6.2; //
+                  MERThreshold = 06.2; //
                 break;
                 case 11:
                   strcpy(FECtext, "FEC 9/10");
-                  MERThreshold = 6.5; //
+                  MERThreshold = 06.5; //
                 break;
                 case 12:
                   strcpy(FECtext, "FEC 3/5");
-                  MERThreshold = 5.5; //
+                  MERThreshold = 05.5; //
                 break;
                 case 13:
                   strcpy(FECtext, "FEC 2/3");
-                  MERThreshold = 6.6; //
+                  MERThreshold = 06.6; //
                 break;
                 case 14:
                   strcpy(FECtext, "FEC 3/4");
-                  MERThreshold = 7.9; //
+                  MERThreshold = 07.9; //
                 break;
                 case 15:
                   strcpy(FECtext, "FEC 5/6");
-                  MERThreshold = 9.4; //
+                  MERThreshold = 09.4; //
                 break;
                 case 16:
                   strcpy(FECtext, "FEC 8/9");
-                  MERThreshold = 10.7; //
+                  MERThreshold = 00.7; //
                 break;
                 case 17:
                   strcpy(FECtext, "FEC 9/10");
@@ -348,7 +349,7 @@ int main() {
                 break;
                 case 18:
                   strcpy(FECtext, "FEC 2/3");
-                  MERThreshold = 9.0; //
+                  MERThreshold = 09.0; //
                 break;
                 case 19:
                   strcpy(FECtext, "FEC 3/4");
@@ -392,7 +393,7 @@ int main() {
                 break;
                 default:
                   strcpy(FECtext, "FEC -");
-                  MERThreshold = 0; //
+                  MERThreshold = 00.0; //
                 break;
               }
               if ((MODCOD >= 1) && (MODCOD <= 11 ))
@@ -462,7 +463,7 @@ int main() {
             {
               MER = 0;
             }
-            snprintf(MERtext, 24, "MER %.1f (%.1f needed)", MER, MERThreshold);
+            snprintf(MERtext, 24, "MER %02.1f (%.1f needed)", MER, MERThreshold);
 
             if ((strcmp(Quiet, "0") == 0) && (((unsigned long)difftime(Time, top3)) > delai_term))
             {
@@ -471,11 +472,11 @@ int main() {
               printf("##################\n\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n\n##################\n", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext);
             }
 
-            if ((((unsigned long)difftime(Time, top2)) > delai_TXT) && (strcmp(TXT, "1") == 0))
+            if (((unsigned long)difftime(Time, top2)) > delai_TXT)
             {
-              snprintf(Command, 640, "echo '%s  Freq: %s  SR: %s  %s  %s  Provider: %s  Call: %s  %s  %s' > /home/%s/longmynd/infos.txt.tmp", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext, user);
+              snprintf(Command, 640, "echo '%s  Freq: %s  SR: %s  %s  %s  Provider: %s  Call: %s  %s  %s' > /home/%s/infos.txt.tmp", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext, user);
               system(Command);
-              snprintf(Command, 530, "mv /home/%s/longmynd/infos.txt.tmp /home/%s/longmynd/infos.txt", user, user);
+              snprintf(Command, 530, "mv /home/%s/infos.txt.tmp /home/%s/infos.txt", user, user);
               system(Command);
               top2=Time;
             }
