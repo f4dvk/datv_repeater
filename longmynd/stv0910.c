@@ -517,6 +517,8 @@ uint8_t stv0910_setup_timing_loop(uint8_t demod, uint32_t sr) {
     uint8_t err=ERROR_NONE;
     uint16_t sr_reg;
 
+    sr=sr+1; // Compensation décalage
+
     printf("Flow: Setup timing loop %i\n", demod);
 
     /* SR (MHz) = ckadc (135MHz) * SFRINIT / 2^16 */

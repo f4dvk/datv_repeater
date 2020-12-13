@@ -2,11 +2,11 @@
 
 # Le pilotage du TX se fait en SSH
 
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
-PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
+PATH_PCONFIG_TX="/home/$USER/datv_repeater/dvbtx/scripts/config.txt"
+PATH_PCONFIG_USR="/home/$USER/datv_repeater/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
-PATHCONFIGRPI="/home/pi/jetson_datv_repeater/dvbtx/scripts/config_rpi.txt"
+PATHCONFIGRPI="/home/pi/datv_repeater/dvbtx/scripts/config_rpi.txt"
 
 get_config_var() {
 lua5.3 - "$1" "$2" <<EOF
@@ -54,7 +54,8 @@ RPIPW=$(get_config_var rpipw $PATH_PCONFIG_USR)
   sed -i '/\(^codec=\).*/s//\1$CODEC/' $PATHCONFIGRPI
   sed -i '/\(^pilots=\).*/s//\1$PILOTS/' $PATHCONFIGRPI
   sed -i '/\(^frames=\).*/s//\1$FRAMES/' $PATHCONFIGRPI
-  /home/pi/jetson_datv_repeater/dvbtx/scripts/tx_rpi.sh >/dev/null 2>/dev/null &
+  sleep 0.1
+  /home/pi/datv_repeater/dvbtx/scripts/tx_rpi.sh >/dev/null 2>/dev/null &
 ENDSSH
 ) &
 EOM

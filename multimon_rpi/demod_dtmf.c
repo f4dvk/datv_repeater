@@ -29,8 +29,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <wiringPi.h>
 
-#include "jetsonGPIO.h"
 /* ---------------------------------------------------------------------- */
 
 /*
@@ -52,14 +52,14 @@
 #define PHINC(x) ((x)*0x10000/SAMPLE_RATE)
 
 /////////////////// GPIO /////////////////// MAX 22
-enum jetsonGPIONumber ptt_vocal = gpio78;
-enum jetsonGPIONumber band_bit0 = gpio16;
-enum jetsonGPIONumber band_bit1 = gpio17;
-//enum jetsonGPIONumber ant_1255 = gpio18;
-enum jetsonGPIONumber ptt_145 = gpio13;
-enum jetsonGPIONumber ptt_437 = gpio19;
-enum jetsonGPIONumber ptt_1255 = gpio20;
-enum jetsonGPIONumber rx_tnt = gpio77;
+int ptt_vocal = 29; // Pin 40
+int band_bit0 = 12; // Pin 19
+int band_bit1 = 13; // Pin 21
+//int ant_1255 = 14; // Pin 23
+int ptt_145 = 6; // Pin 22
+int ptt_437 = 10; // Pin 24
+int ptt_1255 = 11; // Pin 26
+int rx_tnt = 28; // Pi 38
 int load=0;
 
 /////////////////// DTMF ///////////////////
@@ -145,30 +145,6 @@ static void dtmf_init(struct demod_state *s)
 	memset(&s->l1.dtmf, 0, sizeof(s->l1.dtmf));
 }
 
-void unexportGPIO(void)
-{
-  gpioUnexport(ptt_vocal);
-  gpioUnexport(band_bit0);
-  gpioUnexport(band_bit1);
-  //gpioUnexport(ant_1255);
-  gpioUnexport(ptt_145);
-  gpioUnexport(ptt_437);
-  gpioUnexport(ptt_1255);
-  gpioUnexport(rx_tnt);
-}
-
-void exportGPIO(void)
-{
-  gpioExport(ptt_vocal);
-  gpioExport(band_bit0);
-  gpioExport(band_bit1);
-  //gpioExport(ant_1255);
-  gpioExport(ptt_145);
-  gpioExport(ptt_437);
-  gpioExport(ptt_1255);
-  gpioExport(rx_tnt);
-}
-
 void initGPIO(void)
 {
   ////////////////////// config ///////////////////
@@ -184,23 +160,23 @@ void initGPIO(void)
   #define PATH_PCONFIG_SRC path3
 
   ///////////////////// GPIO ////////////////////
-  gpioSetDirection(ptt_vocal, outputPin);
-  gpioSetDirection(band_bit0, outputPin);
-  gpioSetDirection(band_bit1, outputPin);
-  //gpioSetDirection(ant_1255, outputPin);
-  gpioSetDirection(ptt_145, outputPin);
-  gpioSetDirection(ptt_437, outputPin);
-  gpioSetDirection(ptt_1255, outputPin);
-  gpioSetDirection(rx_tnt, outputPin);
+  pinMode(ptt_vocal, OUTPUT);
+  pinMode(band_bit0, OUTPUT);
+  pinMode(band_bit1, OUTPUT);
+  //pinMode(ant_1255, OUTPUT);
+  pinMode(ptt_145, OUTPUT);
+  pinMode(ptt_437, OUTPUT);
+  pinMode(ptt_1255, OUTPUT);
+  pinMode(rx_tnt, OUTPUT);
 
-  gpioSetValue(ptt_vocal, low);
-  gpioSetValue(band_bit0, low);
-  gpioSetValue(band_bit1, low);
-  //gpioSetValue(ant_1255, high);
-  gpioSetValue(ptt_145, low);
-  gpioSetValue(ptt_437, low);
-  gpioSetValue(ptt_1255, low);
-  gpioSetValue(rx_tnt, low);
+  digitalWrite(ptt_vocal, LOW);
+  digitalWrite(band_bit0, LOW);
+  digitalWrite(band_bit1, LOW);
+  //digitalWrite(ant_1255, LOW);
+  digitalWrite(ptt_145, LOW);
+  digitalWrite(ptt_437, LOW);
+  digitalWrite(ptt_1255, LOW);
+  digitalWrite(rx_tnt, LOW);
 
 }
 
@@ -696,23 +672,23 @@ void band_select(void)
 {
   if ((TX_145 == 1) || (RX_145 == 1))
   {
-    gpioSetValue(band_bit0, high);
-    gpioSetValue(band_bit1, low);
+    digitalWrite(band_bit0, HIGH);
+    digitalWrite(band_bit1, LOW);
   }
   else if ((TX_437 == 1) || (RX_437 == 1))
   {
-    gpioSetValue(band_bit0, low);
-    gpioSetValue(band_bit1, high);
+    digitalWrite(band_bit0, LOW);
+    digitalWrite(band_bit1, HIGH);
   }
   else if ((TX_1255 == 1) || (RX_1255 == 1))
   {
-    gpioSetValue(band_bit0, high);
-    gpioSetValue(band_bit1, high);
+    digitalWrite(band_bit0, HIGH);
+    digitalWrite(band_bit1, HIGH);
   }
   else
   {
-    gpioSetValue(band_bit0, low);
-    gpioSetValue(band_bit1, low);
+    digitalWrite(band_bit0, LOW);
+    digitalWrite(band_bit1, LOW);
   }
 }
 
@@ -721,11 +697,11 @@ void Ptt(void)
   if ((TX != 0) && (TX_On == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
   {
     if (TX_145 == 1)
-      gpioSetValue(ptt_145, high);
+      digitalWrite(ptt_145, HIGH);
     else if (TX_437 == 1)
-      gpioSetValue(ptt_437, high);
+      digitalWrite(ptt_437, HIGH);
     else if (TX_1255 == 1)
-      gpioSetValue(ptt_1255, high);
+      digitalWrite(ptt_1255, HIGH);
     TX_On=1;
   }
 }
@@ -743,9 +719,9 @@ void TX_LOW(void)
   //digitalWrite (PTT_UHF, HIGH);
   //digitalWrite (PTT_VHF, HIGH);
   //digitalWrite (PTT_1255, HIGH);
-  gpioSetValue(ptt_145, low);
-  gpioSetValue(ptt_437, low);
-  gpioSetValue(ptt_1255, low);
+  digitalWrite(ptt_145, LOW);
+  digitalWrite(ptt_437, LOW);
+  digitalWrite(ptt_1255, LOW);
   emission=0;
   freq1=0;
   freq2=0;
@@ -770,7 +746,7 @@ void RX_LOW(void)
   //digitalWrite (RX_1255_FM, HIGH);
   //digitalWrite (RX_438_AM, HIGH);
   //digitalWrite (CAMERA, HIGH);
-  gpioSetValue(rx_tnt, low);
+  digitalWrite(rx_tnt, LOW);
   RX_145=0;
   RX_437=0;
   RX_1255=0;
@@ -779,7 +755,7 @@ void RX_LOW(void)
 
 void vocal(void) {
 
-  gpioSetValue(ptt_vocal, high);
+  digitalWrite(ptt_vocal, HIGH);
 
   usleep(400);
 
@@ -875,16 +851,16 @@ void vocal(void) {
 
   usleep(200);
 
-  gpioSetValue(ptt_vocal, low);
+  digitalWrite(ptt_vocal, LOW);
 }
 
 void erreur(void) {
   usleep(500);
-  gpioSetValue(ptt_vocal, high);
+  digitalWrite(ptt_vocal, HIGH);
   usleep(300);
   system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
   usleep(200);
-  gpioSetValue(ptt_vocal, low);
+  digitalWrite(ptt_vocal, LOW);
 }
 
 /* ---------------------------------------------------------------------- */

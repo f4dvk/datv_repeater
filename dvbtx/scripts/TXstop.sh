@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
+PATH_PCONFIG_USR="/home/$USER/datv_repeater/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {

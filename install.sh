@@ -20,9 +20,9 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   sudo apt-get -y install sshpass
   # Installation lecteur image (image de fond).
   sudo apt-get -y install pqiv # longmynd
-  #sudo apt-get -y install vlc-bin # cvlc
   sudo apt-get -y install mplayer
   sudo apt-get -y install vlc
+  sudo apt-get -y install libusb-1.0-0-dev # longmynd
 
   mkdir /home/$USER/tmp # pour sshpass
 
@@ -32,13 +32,13 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
 
   echo
   echo "-----------------------------------------------------"
-  echo "-------- Téléchargement jetson_datv_repeater --------"
+  echo "------------ Téléchargement datv_repeater -----------"
   echo "-----------------------------------------------------"
 
-  git clone https://github.com/f4dvk/jetson_datv_repeater
+  git clone https://github.com/f4dvk/datv_repeater
 
   sudo cp /opt/nvidia/jetson-gpio/etc/99-gpio.rules /etc/udev/rules.d/
-  jetson_datv_repeater/multimon/setup_gpio.sh
+  datv_repeater/multimon/setup_gpio.sh
   sudo udevadm control --reload-rules && sudo udevadm trigger
 
   echo
@@ -47,14 +47,14 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   echo "-----------------------------------------------------"
 
   # Installation multimon pour lecture des codes DTMF
-  cd jetson_datv_repeater/multimon
+  cd datv_repeater/multimon
   mkdir build
   cd build
   cmake ..
   make
   sudo make install
 
-  cd /home/$USER/jetson_datv_repeater/multimon
+  cd /home/$USER/datv_repeater/multimon
   ./setup_gpio.sh
   ./fix_udev_gpio.sh
 
@@ -64,7 +64,7 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   echo "-----------------------------------------------------"
 
   # Installation Longmynd pour la partie RX
-  cd /home/$USER/jetson_datv_repeater/longmynd
+  cd /home/$USER/datv_repeater/longmynd
   make
 
   cd /home/$USER
@@ -77,7 +77,7 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
 
   # Démarrage automatique
   #if [ "$1" == "-l" ]; then
-  #  cp /home/$USER/jetson_datv_repeater/multimon/multimon.desktop /home/$USER/.config/autostart/
+  #  cp /home/$USER/datv_repeater/multimon/multimon.desktop /home/$USER/.config/autostart/
   #fi
 
 fi
@@ -145,10 +145,10 @@ if grep -q "Raspberry" /proc/device-tree/model; then
 
   echo
   echo "-------------------------------------------"
-  echo "---- Installation jetson_datv_repeater ----"
+  echo "-------- Installation datv_repeater -------"
   echo "-------------------------------------------"
 
-  git clone https://github.com/f4dvk/jetson_datv_repeater
+  git clone https://github.com/f4dvk/datv_repeater
 
   echo
   echo "-----------------------------------------------------"
@@ -184,7 +184,7 @@ if grep -q "Raspberry" /proc/device-tree/model; then
 
   cd /home/pi/avc2ts
   make
-  cp avc2ts ../jetson_datv_repeater/dvbtx/bin/
+  cp avc2ts ../datv_repeater/dvbtx/bin/
   cd /home/pi
 
   echo
@@ -201,16 +201,16 @@ if grep -q "Raspberry" /proc/device-tree/model; then
   make
   cd ../DvbTsToIQ/
   make
-  cp dvb2iq /home/pi/jetson_datv_repeater/dvbtx/bin/
+  cp dvb2iq /home/pi/datv_repeater/dvbtx/bin/
   cd /home/pi/rpidatv/src/limesdr_toolbox/
 
   make
-  cp limesdr_send /home/pi/jetson_datv_repeater/dvbtx/bin/
-  cp limesdr_dump /home/pi/jetson_datv_repeater/dvbtx/bin/
-  cp limesdr_stopchannel /home/pi/jetson_datv_repeater/dvbtx/bin/
-  cp limesdr_forward /home/pi/jetson_datv_repeater/dvbtx/bin/
+  cp limesdr_send /home/pi/datv_repeater/dvbtx/bin/
+  cp limesdr_dump /home/pi/datv_repeater/dvbtx/bin/
+  cp limesdr_stopchannel /home/pi/datv_repeater/dvbtx/bin/
+  cp limesdr_forward /home/pi/datv_repeater/dvbtx/bin/
   make dvb
-  cp limesdr_dvb /home/pi/jetson_datv_repeater/dvbtx/bin/
+  cp limesdr_dvb /home/pi/datv_repeater/dvbtx/bin/
   cd /home/pi
 
 fi

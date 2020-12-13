@@ -2,8 +2,8 @@
 
 # Le pilotage du TX se fait en SSH
 
-PATH_PCONFIG_TX="/home/$USER/jetson_datv_repeater/dvbtx/scripts/config.txt"
-PATH_PCONFIG_USR="/home/$USER/jetson_datv_repeater/config.txt"
+PATH_PCONFIG_TX="/home/$USER/datv_repeater/dvbtx/scripts/config.txt"
+PATH_PCONFIG_USR="/home/$USER/datv_repeater/config.txt"
 CMDFILE="/home/$USER/tmp/jetson_command.txt"
 
 get_config_var() {
@@ -85,7 +85,7 @@ case "$FEC" in
 esac
 
 # Bitrate
-BITRATE_TS=$(/home/$USER/jetson_datv_repeater/dvbtx/bin/dvb2iq -s $SYMBOLRATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
+BITRATE_TS=$(/home/$USER/datv_repeater/dvbtx/bin/dvb2iq -s $SYMBOLRATE -f $FECNUM"/"$FECDEN -m $MODE -c $CONSTELLATION $FRAME $PILOTS $TYPE_FRAME -d)
 let TS_AUDIO_BITRATE=AUDIO_BITRATE*15/10
 let VIDEOBITRATE=(BITRATE_TS-24000-TS_AUDIO_BITRATE)*725/1000
 let VIDEOPEAKBITRATE=VIDEOBITRATE*110/100
@@ -129,7 +129,7 @@ case "$CODEC" in
       -c:a copy -f mpegts \
       -metadata service_provider="$CHANNEL" -metadata service_name="$CALL" \
       -streamid 0:256 - \
-    | /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+    | /home/$JETSONUSER/datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
       -t "$FREQ"e6 -g $LIME_GAINF -q 1
 ENDSSH
       ) &
@@ -154,7 +154,7 @@ EOM
       -c:a copy -f mpegts \
       -metadata service_provider="$CHANNEL" -metadata service_name="$CALL" \
       -streamid 0:256 - \
-    | /home/$JETSONUSER/jetson_datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+    | /home/$JETSONUSER/datv_repeater/dvbtx/bin/limesdr_dvb -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
       -t "$FREQ"e6 -g $LIME_GAINF -q 1
 ENDSSH
       ) &

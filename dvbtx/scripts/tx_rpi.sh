@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PATH_PCONFIG_TX="/home/pi/jetson_datv_repeater/dvbtx/scripts/config_rpi.txt"
-PATHBIN="/home/pi/jetson_datv_repeater/dvbtx/bin"
+PATH_PCONFIG_TX="/home/pi/datv_repeater/dvbtx/scripts/config_rpi.txt"
+PATHBIN="/home/pi/datv_repeater/dvbtx/bin"
 
 get_config_var() {
 lua - "$1" "$2" <<EOF

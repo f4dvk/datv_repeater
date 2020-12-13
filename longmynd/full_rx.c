@@ -75,7 +75,7 @@ int main() {
     const char* user = getenv("USER");
     char path[511];
 
-    snprintf(path, 511, "/home/%s/jetson_datv_repeater/longmynd/config.txt", user);
+    snprintf(path, 511, "/home/%s/datv_repeater/longmynd/config.txt", user);
     #define PATH_PCONFIG path
 
     int num;
@@ -127,12 +127,12 @@ int main() {
     }
 
     /* Open status FIFO for read only  */
-    system("sudo rm /home/$USER/jetson_datv_repeater/longmynd/longmynd_main_status >/dev/null 2>/dev/null");
-    system("sudo rm /home/$USER/jetson_datv_repeater/longmynd/longmynd_main_ts >/dev/null 2>/dev/null");
+    system("sudo rm /home/$USER/datv_repeater/longmynd/longmynd_main_status >/dev/null 2>/dev/null");
+    system("sudo rm /home/$USER/datv_repeater/longmynd/longmynd_main_ts >/dev/null 2>/dev/null");
     ret=mkfifo("longmynd_main_status", 0666);
     ret=mkfifo("longmynd_main_ts", 0666);
 
-    snprintf(Command, 530, "sudo /home/$USER/jetson_datv_repeater/longmynd/longmynd -i %s %s %s -g %s -S %s %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
+    snprintf(Command, 530, "sudo /home/$USER/datv_repeater/longmynd/longmynd -i %s %s %s -g %s -S %s %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
     system(Command);
 
     fd_status_fifo = open("longmynd_main_status", O_RDONLY);
@@ -143,7 +143,7 @@ int main() {
     if (strcmp(Player, "1") == 0)
     {
       //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-      snprintf(Command, 530, "ffplay -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8','drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
+      snprintf(Command, 530, "ffplay -loglevel quiet -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8,drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
       system(Command);
     }
 
@@ -179,7 +179,7 @@ int main() {
                 system("sudo killall ffplay >/dev/null 2>/dev/null");
                 usleep(300);
                 //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-                snprintf(Command, 530, "ffplay -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8','drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
+                snprintf(Command, 530, "ffplay -loglevel quiet -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8,drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
                 system(Command);
                 LCK=0;
               }

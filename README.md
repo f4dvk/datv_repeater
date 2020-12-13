@@ -1,4 +1,4 @@
-# jetson_datv_repeater
+# datv_repeater
 
 Source décodage DTMF:  
 https://github.com/EliasOenal/multimon-ng
