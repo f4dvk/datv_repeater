@@ -132,7 +132,7 @@ int main() {
     ret=mkfifo("longmynd_main_status", 0666);
     ret=mkfifo("longmynd_main_ts", 0666);
 
-    snprintf(Command, 530, "sudo /home/$USER/datv_repeater/longmynd/longmynd -i %s %s %s -g %s -S %s %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
+    snprintf(Command, 530, "sudo /home/$USER/datv_repeater/longmynd/longmynd -i %s %s %s -g %s -S %s -r -1 %s %s >/dev/null 2>/dev/null &", IP, Port, In, Gain, Scan, Freq, Sr);
     system(Command);
 
     fd_status_fifo = open("longmynd_main_status", O_RDONLY);
@@ -143,7 +143,7 @@ int main() {
     if (strcmp(Player, "1") == 0)
     {
       //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-      snprintf(Command, 530, "ffplay -loglevel quiet -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8,drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
+      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 5 --marq-size 30 --marq-position={0,4} --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port,);
       system(Command);
     }
 
@@ -176,10 +176,10 @@ int main() {
               if ((((unsigned long)difftime(Time, top)) > delai_reset) && (LCK == 2) && (strcmp(Player, "1") == 0))
               {
                 //system("sudo killall mpv >/dev/null 2>/dev/null");
-                system("sudo killall ffplay >/dev/null 2>/dev/null");
+                system("sudo killall vlc >/dev/null 2>/dev/null");
                 usleep(300);
                 //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-                snprintf(Command, 530, "ffplay -loglevel quiet -i udp://%s:%s -fs -vf 'drawbox=thickness=fill:x=0:y=ih-h:h=40:color=black@0.8,drawtext=textfile=/home/%s/infos.txt:reload=1:fontfile=bpmono.ttf:y=h-line_h:x=w-mod(t*(w+tw)/20\\,(w+tw)):fontcolor=ffcc00:fontsize=38:shadowx=2:shadowy=2'", IP, Port, user);
+                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 5 --marq-size 30 --marq-position={0,4} --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port,);
                 system(Command);
                 LCK=0;
               }

@@ -38,3 +38,11 @@ https://boutique.r-e-f.org/kits-et-composants/205-minitiounerpro-avec-nim.html
 
 Un Jetson Nano, RX, commande DTMF et un Raspberry PI 4 TX avec pilotage en SSH  
 Programme en cours de développement...
+
+# Installation datv_repeater
+
+```sh
+wget https://raw.githubusercontent.com/f4dvk/datv_repeater/master/install.sh
+chmod +x install.sh
+./install.sh
+```

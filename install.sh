@@ -1,11 +1,14 @@
 #!/bin/bash
 
-if grep -q "jetson-nano" /proc/device-tree/model; then
+if grep -q "Jetson Nano" /proc/device-tree/model; then
 
   echo
   echo "-----------------------------------------------------"
   echo "----------- Installation sur Jetson Nano ------------"
   echo "-----------------------------------------------------"
+  echo
+
+  echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/dont-prompt-$USER-for-password
 
   sudo apt-get update
   sudo apt-get -y dist-upgrade
@@ -24,11 +27,35 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   sudo apt-get -y install vlc
   sudo apt-get -y install libusb-1.0-0-dev # longmynd
 
+  # gstreamer
+  # sudo apt-get -y install python-gst-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-tools
+
   mkdir /home/$USER/tmp # pour sshpass
 
   echo "sub-auto=all" >> /home/$USER/.config/mpv/mpv.conf # sous-titre mpv
 
   cd /home/$USER
+
+  echo
+  echo "-----------------------------------------------------"
+  echo "---------------- Installation de VNC ----------------"
+  echo "-----------------------------------------------------"
+
+  sudo apt-get install tigervnc-scraping-server
+  sudo apt-get install git psmisc
+
+  mkdir -p ~/.vnc
+
+  # Enregistrer un mot de passe
+  # vncpasswd
+
+  git clone https://github.com/sebestyenistvan/runvncserver
+  cp ~/runvncserver/startvnc ~
+  chmod +x ~/startvnc
+
+  # Démarrage suto:
+  # echo "/home/$USER/startvnc start >/dev/null 2>&1" >> ~/.xsessionrc
+
 
   echo
   echo "-----------------------------------------------------"
@@ -57,6 +84,8 @@ if grep -q "jetson-nano" /proc/device-tree/model; then
   cd /home/$USER/datv_repeater/multimon
   ./setup_gpio.sh
   ./fix_udev_gpio.sh
+
+  sudo cp /home/$USER/datv_repeater/config/default.pa /etc/pluse/
 
   echo
   echo "-----------------------------------------------------"
@@ -103,6 +132,8 @@ if grep -q "Raspberry" /proc/device-tree/model; then
   sudo apt-get -y install libbsd-dev
   sudo apt-get -y install libasound2-dev sox # avc2ts
   sudo apt-get -y install libavcodec-dev libavformat-dev libswscale-dev libavdevice-dev # ffmpegsrc.cpp
+
+  #sudo apt-get -y install xscreensaver # utilitaire pour désactiver la mise en veille
 
   cd /home/pi
 

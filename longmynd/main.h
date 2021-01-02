@@ -116,7 +116,7 @@ typedef struct {
     uint32_t symbolrate;
     uint32_t viterbi_error_rate; // DVB-S1
     uint32_t bit_error_rate; // DVB-S2
-    uint32_t modulation_error_rate; // DVB-S2
+    int32_t modulation_error_rate; // DVB-S2
     bool errors_bch_uncorrected;
     uint32_t errors_bch_count;
     uint32_t errors_ldpc_count;

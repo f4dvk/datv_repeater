@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <wiringPi.h>
 
 /* ---------------------------------------------------------------------- */
@@ -158,6 +159,8 @@ void initGPIO(void)
 
   snprintf(path3, 630, "/home/%s/datv_repeater/source/config.txt", user);
   #define PATH_PCONFIG_SRC path3
+
+  wiringPiSetup();
 
   ///////////////////// GPIO ////////////////////
   pinMode(ptt_vocal, OUTPUT);
@@ -567,8 +570,8 @@ usleep(100);
         RX_437=1;
         //band_select();
         RX=6;
-        //gpioSetValue(ant_437, low);
-        gpioSetValue(rx_tnt, high);
+        //digitalWrite(ant_437, LOW);
+        digitalWrite(rx_tnt, HIGH);
         vocal();
       }
     else erreur();

@@ -45,6 +45,7 @@ load-module module-switch-on-port-available
 ### Automatically load driver modules depending on the hardware available
 load-module module-alsa-sink name=HDMI_1 device=hw:0,0
 load-module module-alsa-sink name=HDMI_2 device=hw:1,0
+load-module module-alsa-source name=Micro device=hw:3,0
 # Commenté:
 #.ifexists module-udev-detect.so
 #load-module module-udev-detect tsched=0
