@@ -86,6 +86,7 @@ int main() {
     char status_message_char[14];
     char stat_string[63];
     char MERtext[63];
+    char MERtext2[63];
     char STATEtext[63];
     char FREQtext[63];
     char SRtext[63];
@@ -143,7 +144,7 @@ int main() {
     if (strcmp(Player, "1") == 0)
     {
       //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 5 --marq-size 30 --marq-position={0,4} --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port,);
+      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 0 --marq-size 14 --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
       system(Command);
     }
 
@@ -179,7 +180,7 @@ int main() {
                 system("sudo killall vlc >/dev/null 2>/dev/null");
                 usleep(300);
                 //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 5 --marq-size 30 --marq-position={0,4} --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port,);
+                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 0 --marq-size 14 --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
                 system(Command);
                 LCK=0;
               }
@@ -464,6 +465,7 @@ int main() {
               MER = 0;
             }
             snprintf(MERtext, 24, "MER %02.1f (%.1f needed)", MER, MERThreshold);
+            snprintf(MERtext2, 24, "MER %02.1f (%.1f)", MER, MERThreshold);
 
             if ((strcmp(Quiet, "0") == 0) && (((unsigned long)difftime(Time, top3)) > delai_term))
             {
@@ -474,7 +476,8 @@ int main() {
 
             if (((unsigned long)difftime(Time, top2)) > delai_TXT)
             {
-              snprintf(Command, 640, "echo '%s  Freq: %s  SR: %s  %s  %s  Provider: %s  Call: %s  %s  %s' > /home/%s/infos.txt.tmp", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext, user);
+              //snprintf(Command, 640, "echo '%s  Freq: %s  SR: %s  %s  %s  Provider: %s  Call: %s  %s  %s' > /home/%s/infos.txt.tmp", STATEtext, FREQtext, SRtext, Modulationtext, FECtext, ServiceProvidertext, Servicetext, Encodingtext, MERtext, user);
+              snprintf(Command, 640, "echo '%s %s %s %s %s %s %s %s' > /home/%s/infos.txt.tmp", ServiceProvidertext, FREQtext, STATEtext, Modulationtext, Encodingtext, SRtext, FECtext, MERtext2, user);
               system(Command);
               snprintf(Command, 530, "mv /home/%s/infos.txt.tmp /home/%s/infos.txt", user, user);
               system(Command);
