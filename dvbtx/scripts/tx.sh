@@ -56,6 +56,7 @@ RPIPW=$(get_config_var rpipw $PATH_PCONFIG_USR)
   sed -i '/\(^frames=\).*/s//\1$FRAMES/' $PATHCONFIGRPI
   sleep 1
   /home/pi/datv_repeater/dvbtx/scripts/tx_rpi.sh >/dev/null 2>/dev/null &
+  /home/pi/datv_repeater/dvbtx/scripts/watchdog.sh >/dev/null 2>/dev/null &
 ENDSSH
 ) &
 EOM

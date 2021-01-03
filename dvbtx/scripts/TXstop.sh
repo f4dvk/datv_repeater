@@ -24,7 +24,7 @@ RPIPW=$(get_config_var jetsonpw $PATH_PCONFIG_USR)
 
 /bin/cat <<EOM >$CMDFILE
 (sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
-  /home/pi/dvbtx/scripts/TXstop_rpi.sh >/dev/null 2>/dev/null &
+  /home/pi/datv_repeater/dvbtx/scripts/TXstop_rpi.sh >/dev/null 2>/dev/null &
 ENDSSH
 ) &
 EOM

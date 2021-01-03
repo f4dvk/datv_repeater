@@ -8,6 +8,7 @@ sudo killall dvb2iq >/dev/null 2>/dev/null
 sudo killall limesdr_send >/dev/null 2>/dev/null
 sudo killall limesdr_dvb >/dev/null 2>/dev/null
 sudo killall sox >/dev/null 2>/dev/null
+sudo killall watchdog.sh >/dev/null 2>/dev/null
 
 # Turn the mpeg-2 camera overlay off
 v4l2-ctl -d /dev/video0 --overlay 0 >/dev/null 2>/dev/null
