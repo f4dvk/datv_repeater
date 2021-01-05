@@ -16,7 +16,7 @@ while true;do
 
   diff=$(($diff / 60))
 
-  if [ $diff == $delai ] && [ $(ps -ef | grep "limesdr_dvb" | grep -v grep | wc -l) -gt 1 ]; then
+  if [ $diff == $delai ] && [ $(ps -ef | grep "limesdr_dvb" | grep -v grep | wc -l) -gt 0 ]; then
     /home/pi/datv_repeater/dvbtx/scripts/TXstop_rpi.sh >/dev/null 2>/dev/null &
     exit
   elif [ $diff == $delai ] && [ $(ps -ef | grep "limesdr_dvb" | grep -v grep | wc -l) == 0 ]; then

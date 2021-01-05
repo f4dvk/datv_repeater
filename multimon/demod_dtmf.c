@@ -523,7 +523,7 @@ usleep(100);
         RX=1;
         vocal();
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 0) && (Cod>0)) // Code *11
     {
@@ -540,7 +540,7 @@ usleep(100);
         RX=2;
         vocal();
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) // Code *12
     {
@@ -557,7 +557,7 @@ usleep(100);
         RX=3;
         vocal();
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 2) && (Cod>0)) // Code *13
     {
@@ -590,7 +590,7 @@ usleep(100);
         RX=5;
         vocal();
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 5) && (Cod>0)) // Code *15
     {
@@ -607,7 +607,7 @@ usleep(100);
         gpioSetValue(rx_tnt, high);
         vocal();
       }
-    else erreur();
+      else erreur();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) // Code *16
     {
@@ -623,8 +623,6 @@ usleep(100);
     {
       RX_LOW();
       usleep(500);
-      system("echo 'OUTA_4'>/dev/ttyUSB0");
-      system("echo 'OUTB_4'>/dev/ttyUSB0");
       SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"MULTI-VIDEOS\n");
@@ -659,9 +657,7 @@ usleep(100);
     {
       RX_LOW();
       usleep(500);
-      system("echo 'OUTA_4'>/dev/ttyUSB0");
-      system("echo 'OUTB_4'>/dev/ttyUSB0");
-      SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "CAMERA");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"CAMERA\n");
       RX=11;
@@ -745,11 +741,6 @@ void Ptt(void)
 void TX_LOW(void)
 {
   system("/home/$USER/datv_repeater/dvbtx/scripts/TXstop.sh >/dev/null 2>/dev/null &");
-  //system("sudo killall limesdr_dvb >/dev/null 2>/dev/null");
-  //system("sudo killall gst-launch-1.0 >/dev/null 2>/dev/null");
-  //system("sudo killall ffmpeg >/dev/null 2>/dev/null");
-  //system("sudo killall -9 limesdr_dvb >/dev/null 2>/dev/null");
-  //system("/home/$USER/dvbsdr/build/limesdr_toolbox/limesdr_stopchannel >/dev/null 2>/dev/null");
   //digitalWrite (PTT_DATV, HIGH);
   //digitalWrite (PTT_TNT, HIGH);
   //digitalWrite (PTT_UHF, HIGH);

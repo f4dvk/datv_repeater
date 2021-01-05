@@ -18,9 +18,9 @@ end
 EOF
 }
 
-RPIIP=$(get_config_var jetsonip $PATH_PCONFIG_USR)
-RPIUSER=$(get_config_var jetsonuser $PATH_PCONFIG_USR)
-RPIPW=$(get_config_var jetsonpw $PATH_PCONFIG_USR)
+RPIIP=$(get_config_var rpiip $PATH_PCONFIG_USR)
+RPIUSER=$(get_config_var rpiuser $PATH_PCONFIG_USR)
+RPIPW=$(get_config_var rpipw $PATH_PCONFIG_USR)
 
 /bin/cat <<EOM >$CMDFILE
 (sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
