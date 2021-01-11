@@ -110,6 +110,10 @@ void erreur(void);
 void initGPIO(void);
 void exportGPIO(void);
 void unexportGPIO(void);
+void initCOM(void);
+void encoder_start(void);
+void encoder_stop(void);
+void encoder_video(void);
 void band_select(void);
 
 /* ---------------------------------------------------------------------- */

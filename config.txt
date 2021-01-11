@@ -6,3 +6,6 @@ rpipw=raspberry
 camip=192.168.0.37
 camusr=admin
 campw=admin
+encoderip=192.168.0.120
+plutoip=192.168.0.121
+tx=pluto

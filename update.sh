@@ -14,7 +14,6 @@ sudo killall limesdr_dvb >/dev/null 2>/dev/null
 
 sudo apt-get update
 sudo apt-get -y dist-upgrade
-sudo apt-get -y install apt-utils
 
 echo
 echo "-----------------------------------------------------"
@@ -24,13 +23,11 @@ echo "-----------------------------------------------------"
 cd /home/$USER
 
 BACKUP="/home/$USER/backup"
-RXCONFIG="/home/$USER/datv_repeater/longmynd"
-TXCONFIG="/home/$USER/datv_repeater/dvbtx/scripts"
+CONFIG="/home/$USER/datv_repeater"
 
 mkdir "$BACKUP" >/dev/null 2>/dev/null
 
-cp -f -r "$RXCONFIG"/config.txt "$BACKUP"/rx_config.txt
-cp -f -r "$TXCONFIG"/config.txt "$BACKUP"/tx_config.txt
+cp -f -r "$CONFIG"/config.txt "$BACKUP"/config.txt
 
 echo
 echo "-----------------------------------------------------"
@@ -80,8 +77,7 @@ echo "-----------------------------------------------------"
 
 cd /home/$USER
 
-cp -f -r "$BAKUP"/rx_config.txt "$RXCONFIG"/config.txt
-cp -f -r "$BAKUP"/tx_config.txt "$TXCONFIG"/config.txt
+cp -f -r "$BAKUP"/config.txt "$CONFIG"/config.txt
 
 echo
 echo "-----------------------------------------------------"
