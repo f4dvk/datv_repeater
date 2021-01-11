@@ -26,6 +26,7 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   sudo apt-get -y install mplayer
   sudo apt-get -y install vlc
   sudo apt-get -y install libusb-1.0-0-dev # longmynd
+  sudo apt-get install libcurl4-openssl-dev # Command encodeur H.264 / H.265
 
   # gstreamer
   # sudo apt-get -y install python-gst-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-tools

@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <curl/curl.h>
 
 #include "jetsonGPIO.h"
 /* ---------------------------------------------------------------------- */
@@ -76,6 +77,7 @@ int RX=0;
 char path1[630];
 char path2[630];
 char path3[630];
+char path4[630];
 
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
@@ -138,6 +140,38 @@ void SetConfigParam(char *PathConfigFile, char *Param, char *Value)
   }
 }
 
+void GetConfigParam(char *PathConfigFile, char *Param, char *Value)
+{
+  char * line = NULL;
+  size_t len = 0;
+  int read;
+  char ParamWithEquals[255];
+  strcpy(ParamWithEquals, Param);
+  strcat(ParamWithEquals, "=");
+
+  //printf("Get Config reads %s for %s ", PathConfigFile , Param);
+
+  FILE *fp=fopen(PathConfigFile, "r");
+  if(fp != 0)
+  {
+    while ((read = getline(&line, &len, fp)) != -1)
+    {
+      if(strncmp (line, ParamWithEquals, strlen(Param) + 1) == 0)
+      {
+        strcpy(Value, line+strlen(Param)+1);
+        char *p;
+        if((p=strchr(Value,'\n')) !=0 ) *p=0; //Remove \n
+        break;
+      }
+    }
+  }
+  else
+  {
+    printf("Config file not found \n");
+  }
+  fclose(fp);
+}
+
 /* ---------------------------------------------------------------------- */
 
 static void dtmf_init(struct demod_state *s)
@@ -183,6 +217,9 @@ void initGPIO(void)
   snprintf(path3, 630, "/home/%s/datv_repeater/source/config.txt", user);
   #define PATH_PCONFIG_SRC path3
 
+  snprintf(path3, 630, "/home/%s/datv_repeater/config.txt", user);
+  #define PATH_PCONFIG path3
+
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
   gpioSetDirection(band_bit0, outputPin);
@@ -210,6 +247,274 @@ void initCOM(void)
   system("sudo chmod o+rw /dev/ttyUSB0");
   system("stty 9600 -F /dev/ttyUSB0 raw -echo");
   system("cat /dev/ttyUSB0 >/dev/null 2/dev/null &");
+}
+
+void encoder_start(void)
+{
+  char Ip[20];
+  char PlutoIp[20];
+  char Call[10];
+  char Freq[10];
+  char Mode[10];
+  char Constellation[10];
+  char Sr[10];
+  char Fec[10];
+  int fec_num;
+  int fec_den;
+
+  char Url[60];
+  char Body[500];
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
+  GetConfigParam(PATH_PCONFIG,"call", Call);
+  GetConfigParam(PATH_PCONFIG_TX,"freq", Freq);
+  GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
+  GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
+  GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
+  GetConfigParam(PATH_PCONFIG_TX,"constellation", Constellation);
+
+  if (strcmp (Mode, "DVBS") == 0)
+  {
+    fec_num = atoi(Fec);
+    fec_den = atoi(Fec)+1;
+  }
+  else
+  {
+    char fec_i[2];
+    fec_num = log10(atoi(Fec));
+    fec_num = atoi(Fec) / pow(10, fec_num);
+    fec_den = atoi(Fec) % 10;
+    sprintf(fec_i, "%d", fec_den);
+    if (strcmp (fec_i, "1") == 0) fec_den = 10;
+  }
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=rtmp", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 500, " <request><rtmp><port>1935</port>\
+          <push>\
+          <active>0</active>\
+          <url></url>\
+          </push>\
+          <push>\
+          <active>1</active>\
+          <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,-0,nocalib,800,32,/,%s,</url>\
+          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Call);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  /* Clean up after yourself */
+  curl_easy_cleanup(curl);
+  return 0;
+}
+
+void encoder_stop(void)
+{
+  char Ip[20];
+  char PlutoIp[20];
+  char Call[10];
+  char Freq[10];
+  char Mode[10];
+  char Constellation[10];
+  char Sr[10];
+  char Fec[10];
+  int fec_num;
+  int fec_den;
+
+  char Url[60];
+  char Body[500];
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
+  GetConfigParam(PATH_PCONFIG,"call", Call);
+  GetConfigParam(PATH_PCONFIG_TX,"freq", Freq);
+  GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
+  GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
+  GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
+  GetConfigParam(PATH_PCONFIG_TX,"constellation", Constellation);
+
+  if (strcmp (Mode, "DVBS") == 0)
+  {
+    fec_num = atoi(Fec);
+    fec_den = atoi(Fec)+1;
+  }
+  else
+  {
+    char fec_i[2];
+    fec_num = log10(atoi(Fec));
+    fec_num = atoi(Fec) / pow(10, fec_num);
+    fec_den = atoi(Fec) % 10;
+    sprintf(fec_i, "%d", fec_den);
+    if (strcmp (fec_i, "1") == 0) fec_den = 10;
+  }
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=rtmp", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 500, " <request><rtmp><port>1935</port>\
+          <push>\
+          <active>0</active>\
+          <url></url>\
+          </push>\
+          <push>\
+          <active>0</active>\
+          <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,-0,nocalib,800,32,/,%s,</url>\
+          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Call);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  /* Clean up after yourself */
+  curl_easy_cleanup(curl);
+  return 0;
+}
+
+void encoder_video(void)
+{
+  char Ip[20];
+  char Mode[10];
+  char Constellation[10];
+  char Sr[10];
+  char Fec[10];
+  char Codec[10];
+  char Format[10];
+  char Resolution[10];
+  int fec_num;
+  int fec_den;
+
+  char Url[60];
+  char Body[230];
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG,"format", Format);
+  GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
+  GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
+  GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
+  GetConfigParam(PATH_PCONFIG_TX,"constellation", Constellation);
+  GetConfigParam(PATH_PCONFIG_TX,"codec", Codec);
+
+  if (strcmp (Codec, "H265") == 0)
+  {
+    Codec = "1";  // H265
+  }
+  else
+  {
+    Codec = "0";  // H264
+  }
+
+  if (strcmp (Mode, "DVBS") == 0)
+  {
+    fec_num = atoi(Fec);
+    fec_den = atoi(Fec)+1;
+  }
+  else
+  {
+    char fec_i[2];
+    fec_num = log10(atoi(Fec));
+    fec_num = atoi(Fec) / pow(10, fec_num);
+    fec_den = atoi(Fec) % 10;
+    sprintf(fec_i, "%d", fec_den);
+    if (strcmp (fec_i, "1") == 0) fec_den = 10;
+  }
+
+  snprintf(command, 150, "/home/%s/dvb2iq -s %s -f %d/%d -d -r 1 -m %s -c %s 2>/dev/null", user, Sr, fec_num, fec_den, Mode, Constellation);
+
+  dvb=popen (command, "r");
+
+  while (fgets(bitrate, 10, dvb) != NULL)
+  {
+    //printf("Résultat Bitrate TS: %s", bitrate);
+  }
+  pclose (dvb);
+
+  // Bitrate Audio: 32K
+  int bitrate_v = ((atoi(bitrate)-12000-(32000*15/10))*650/1000);
+  bitrate_v = bitrate_v/1000;
+  //printf("Bitrate video: %d kbit/s\n", bitrate_v);
+
+  if (strcmp (Format, "16:9") == 0)
+  {
+    strcpy(Resolution, "768x400"); // 1024x576 ??
+  }
+  else
+  {
+    if (bitrate_v < 190)
+    {
+      strcpy(Resolution, "352x288");
+    }
+    else
+    {
+      strcpy(Resolution, "704x576");
+    }
+  }
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=videoenc&stream=1", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 230, " <request><videoenc>\
+          <codec>%s</codec>\
+          <resolution>%s</resolution>\
+          <framerate>%s</framerate>\
+          <audioenc>1</audioenc>\
+          <rc>1</rc>\
+          <keygop>25</keygop>\
+          <bitrate>%d</bitrate>\
+          <quality>5</quality>\
+          <profile>0</profile>\
+          </videoenc></request>", Codec, Resolution, Fps, bitrate_v);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  curl_easy_cleanup(curl);
+  return 0;
 }
 /* ---------------------------------------------------------------------- */
 
