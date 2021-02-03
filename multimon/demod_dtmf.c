@@ -79,6 +79,12 @@ char path2[630];
 char path3[630];
 char path4[630];
 
+/////////////////// VIDEO //////////////////
+char Resolution[10];
+int Fps=25;
+int bitrate_v;
+char new_bitrate[10];
+
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
 time_t top;                        // variabe de calcul temps TX
@@ -249,6 +255,112 @@ void initCOM(void)
   system("cat /dev/ttyUSB0 >/dev/null 2/dev/null &");
 }
 
+void initRX(void)
+{
+  usleep(500);
+  SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
+  system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
+  verbprintf(0,"MULTI-VIDEOS\n");
+  RX=8;
+}
+
+void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
+{
+  char calcul[150];
+
+  int Audio_b=32000;
+  int AUDIOCHANNELS=2;
+  int VIDEO_WIDTH=1920;
+  int VIDEO_HEIGHT=1080;
+
+  snprintf(calcul, 150, "echo '(%d/1000)*85/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+  FILE *value=popen (calcul, "r");
+
+  while (fgets(new_bitrate, 10, value) != NULL)
+  {
+    printf("Résultat Bitrate video: %s", new_bitrate);
+  }
+  pclose (value);
+
+  int new_bitrate_v=atoi(new_bitrate);
+
+  if (new_bitrate_v < 1200)
+  {
+    AUDIOCHANNELS=2;
+    Fps=25;
+    VIDEO_WIDTH=1280;
+    VIDEO_HEIGHT=720;
+    snprintf(calcul, 150, "echo '(%d/1000)*80/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+    FILE *value=popen (calcul, "r");
+
+    while (fgets(new_bitrate, 10, value) != NULL)
+    {
+      //printf("Résultat Bitrate video: %s", new_bitrate);
+    }
+    pclose (value);
+  }
+
+  if (new_bitrate_v < 400)
+  {
+    AUDIOCHANNELS=2;
+    Fps=25;
+    VIDEO_WIDTH=768;
+    VIDEO_HEIGHT=432;
+    snprintf(calcul, 150, "echo '(%d/1000)*75/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+    FILE *value=popen (calcul, "r");
+
+    while (fgets(new_bitrate, 10, value) != NULL)
+    {
+      //printf("Résultat Bitrate video: %s", new_bitrate);
+    }
+    pclose (value);
+  }
+
+  if (new_bitrate_v < 250)
+  {
+    AUDIOCHANNELS=1;
+    VIDEO_WIDTH=576;
+    VIDEO_HEIGHT=324;
+    Fps=15;
+    snprintf(calcul, 150, "echo '(%d/1000)*75/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+    FILE *value=popen (calcul, "r");
+
+    while (fgets(new_bitrate, 10, value) != NULL)
+    {
+      //printf("Résultat Bitrate video: %s", new_bitrate);
+    }
+    pclose (value);
+  }
+
+  if (new_bitrate_v < 200)
+  {
+    AUDIOCHANNELS=1;
+    VIDEO_WIDTH=384;
+    VIDEO_HEIGHT=216;
+    Fps=15;
+    snprintf(calcul, 150, "echo '(%d/1000)*65/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+    FILE *value=popen (calcul, "r");
+
+    while (fgets(new_bitrate, 10, value) != NULL)
+    {
+      //printf("Résultat Bitrate video: %s", new_bitrate);
+    }
+    pclose (value);
+  }
+
+  if (new_bitrate_v < 100)
+  {
+    AUDIOCHANNELS=1;
+    VIDEO_WIDTH=384;
+    VIDEO_HEIGHT=216;
+    Fps=10;
+    strcpy(new_bitrate, "64");
+  }
+
+  snprintf(Resolution, 10, "%dx%d", VIDEO_WIDTH, VIDEO_HEIGHT);
+  printf("Video Bitrate: %d Resolution: %s at %d\n", atoi(new_bitrate), Resolution, Fps);
+}
+
 void encoder_start(void)
 {
   char Ip[20];
@@ -409,16 +521,14 @@ void encoder_video(void)
   char Sr[10];
   char Fec[10];
   char Codec[10];
-  char Format[10];
-  char Resolution[10];
   int fec_num;
   int fec_den;
+  char bitrate[10];
 
   char Url[60];
   char Body[230];
 
   GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
-  GetConfigParam(PATH_PCONFIG,"format", Format);
   GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
   GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
   GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
@@ -459,27 +569,24 @@ void encoder_video(void)
   }
   pclose (dvb);
 
-  // Bitrate Audio: 32K
-  int bitrate_v = ((atoi(bitrate)-12000-(32000*15/10))*650/1000);
-  bitrate_v = bitrate_v/1000;
-  //printf("Bitrate video: %d kbit/s\n", bitrate_v);
+  strategy(atoi(bitrate));
 
-  if (strcmp (Format, "16:9") == 0)
+/*  // Bitrate Audio: 32K
+  int new_bitrate = ((atoi(bitrate)-12000-(32000*15/10))*650/1000);
+  new_bitrate = new_bitrate/1000;
+  //printf("Bitrate video: %d kbit/s\n", new_bitrate);
+
+
+  if (new_bitrate < 180) // DVBS 250Ks 3/4 > 185 kbits/s
   {
-    strcpy(Resolution, "768x400"); // 1024x576 ??
+    strcpy(Resolution, "384x216");
+    Fps=20;
   }
   else
   {
-    if (bitrate_v < 190)
-    {
-      strcpy(Resolution, "352x288");
-    }
-    else
-    {
-      strcpy(Resolution, "704x576");
-    }
+    strcpy(Resolution, "1024x576");
   }
-
+*/
   CURL *curl;
   CURLcode res;
 
@@ -495,14 +602,14 @@ void encoder_video(void)
   snprintf(Body, 230, " <request><videoenc>\
           <codec>%s</codec>\
           <resolution>%s</resolution>\
-          <framerate>%s</framerate>\
+          <framerate>%d</framerate>\
           <audioenc>1</audioenc>\
           <rc>1</rc>\
-          <keygop>25</keygop>\
+          <keygop>100</keygop>\
           <bitrate>%d</bitrate>\
           <quality>5</quality>\
           <profile>0</profile>\
-          </videoenc></request>", Codec, Resolution, Fps, bitrate_v);
+          </videoenc></request>", Codec, Resolution, Fps, atoi(new_bitrate));
 
   char *body = Body;
 
@@ -647,6 +754,9 @@ void loop(void)
   {
     initGPIO();
     initCOM();
+    TX_LOW();
+    RX_LOW();
+    initRX();
     load=1;
   }
 
@@ -658,9 +768,12 @@ void loop(void)
 
 void Commande(void)
 {
-usleep(100);
 
-//////////////////////////////////////// TX ////////////////////////////////////////
+  char Tx[10];
+  GetConfigParam(PATH_PCONFIG,"tx", Tx);
+  usleep(100);
+
+  //////////////////////////////////////// TX ////////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 0) && (Cod>0)) // Code *01
     {
       if (RX_145 == 0){
@@ -678,7 +791,15 @@ usleep(100);
           band_select();
           TX=1;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -703,7 +824,15 @@ usleep(100);
           band_select();
           TX=2;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -728,7 +857,15 @@ usleep(100);
           band_select();
           TX=3;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -753,7 +890,15 @@ usleep(100);
           band_select();
           TX=4;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -778,7 +923,15 @@ usleep(100);
           band_select();
           TX=5;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -803,7 +956,15 @@ usleep(100);
           band_select();
           TX=6;
           emission=1;
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video();
+            encoder_start();
+          }
+          else // Limesdr via raspberry
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -1045,7 +1206,14 @@ void Ptt(void)
 
 void TX_LOW(void)
 {
-  system("/home/$USER/datv_repeater/dvbtx/scripts/TXstop.sh >/dev/null 2>/dev/null &");
+  if (strcmp (Tx, "pluto") == 0)
+  {
+  	encoder_stop();
+  }
+  else // Limesdr via raspberry
+  {
+    system("/home/$USER/datv_repeater/dvbtx/scripts/TXstop.sh >/dev/null 2>/dev/null &");
+  }
   //digitalWrite (PTT_DATV, HIGH);
   //digitalWrite (PTT_TNT, HIGH);
   //digitalWrite (PTT_UHF, HIGH);

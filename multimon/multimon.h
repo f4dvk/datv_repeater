@@ -111,6 +111,8 @@ void initGPIO(void);
 void exportGPIO(void);
 void unexportGPIO(void);
 void initCOM(void);
+void initRX(void);
+void strategy(int bitrate_ts);
 void encoder_start(void);
 void encoder_stop(void);
 void encoder_video(void);
