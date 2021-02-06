@@ -79,6 +79,10 @@ char path2[630];
 char path3[630];
 char path4[630];
 
+char Tx[10];
+FILE *dvb;
+const char* user;
+
 /////////////////// VIDEO //////////////////
 char Resolution[10];
 int Fps=25;
@@ -212,7 +216,7 @@ void exportGPIO(void)
 void initGPIO(void)
 {
   ////////////////////// config ///////////////////
-  const char* user = getenv("USER");
+  strcpy(user, getenv("USER"));
 
   snprintf(path1, 630, "/home/%s/datv_repeater/longmynd/config.txt", user);
   #define PATH_PCONFIG_RX path1
@@ -223,8 +227,8 @@ void initGPIO(void)
   snprintf(path3, 630, "/home/%s/datv_repeater/source/config.txt", user);
   #define PATH_PCONFIG_SRC path3
 
-  snprintf(path3, 630, "/home/%s/datv_repeater/config.txt", user);
-  #define PATH_PCONFIG path3
+  snprintf(path4, 630, "/home/%s/datv_repeater/config.txt", user);
+  #define PATH_PCONFIG path4
 
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
@@ -361,7 +365,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   printf("Video Bitrate: %d Resolution: %s at %d\n", atoi(new_bitrate), Resolution, Fps);
 }
 
-void encoder_start(void)
+int encoder_start()
 {
   char Ip[20];
   char PlutoIp[20];
@@ -437,7 +441,7 @@ void encoder_start(void)
   return 0;
 }
 
-void encoder_stop(void)
+int encoder_stop()
 {
   char Ip[20];
   char PlutoIp[20];
@@ -513,8 +517,9 @@ void encoder_stop(void)
   return 0;
 }
 
-void encoder_video(void)
+int encoder_video()
 {
+  char command[150];
   char Ip[20];
   char Mode[10];
   char Constellation[10];
@@ -526,7 +531,7 @@ void encoder_video(void)
   char bitrate[10];
 
   char Url[60];
-  char Body[230];
+  char Body[350];
 
   GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
   GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
@@ -537,11 +542,11 @@ void encoder_video(void)
 
   if (strcmp (Codec, "H265") == 0)
   {
-    Codec = "1";  // H265
+    strcpy(Codec, "1");  // H265
   }
   else
   {
-    Codec = "0";  // H264
+    strcpy(Codec, "0");  // H264
   }
 
   if (strcmp (Mode, "DVBS") == 0)
@@ -599,7 +604,7 @@ void encoder_video(void)
   headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-  snprintf(Body, 230, " <request><videoenc>\
+  snprintf(Body, 350, " <request><videoenc>\
           <codec>%s</codec>\
           <resolution>%s</resolution>\
           <framerate>%d</framerate>\
@@ -768,8 +773,6 @@ void loop(void)
 
 void Commande(void)
 {
-
-  char Tx[10];
   GetConfigParam(PATH_PCONFIG,"tx", Tx);
   usleep(100);
 
@@ -1239,6 +1242,7 @@ void RX_LOW(void)
   system("sudo killall longmynd >/dev/null 2>/dev/null");
   system("killall mpv >/dev/null 2>/dev/null");
   system("killall gst-launch-1.0 >/dev/null 2>/dev/null");
+  system("sudo killall vlc >/dev/null 2>/dev/null");
   //digitalWrite (MIRE, HIGH);
   //digitalWrite (all_videos, HIGH);
   //digitalWrite (VIDEO, HIGH);

@@ -40,14 +40,15 @@ videotestsrc ! textoverlay text="JN19PG" valignment=center halignment=center fon
   ;;
   "FILM" )
 #mpv --fs --no-cache --no-terminal --loop-playlist=inf /home/$USER/datv_repeater/film.mp4 >/dev/null 2>/dev/null &
-cvlc -f --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeater/film.mp4 >/dev/null 2>/dev/null &
+cvlc -f --repeat --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeater/film/film.mpg >/dev/null 2>/dev/null &
   ;;
-  "HDMI" ) # Son pas encore implémenté, voir pour utiliser mplayer?
-gst-launch-1.0 -q v4l2src device=/dev/video0 ! 'video/x-raw, width=720, height=480, format=(string)YUY2, framerate=30/1' ! nvvidconv ! 'video/x-raw(memory:NVMM), width=(int)720, height=(int)480, framerate=(fraction)30/1' ! nvoverlaysink -e >/dev/null 2>/dev/null &
+  "HDMI" ) # Audio ok voir pour détecter automatiquement l'entrée HDMI
+#gst-launch-1.0 -q v4l2src device=/dev/video0 ! 'video/x-raw, width=720, height=480, format=(string)YUY2, framerate=30/1' ! nvvidconv ! 'video/x-raw(memory:NVMM), width=(int)720, height=(int)480, framerate=(fraction)30/1' ! nvoverlaysink -e >/dev/null 2>/dev/null &
+cvlc -f --codec ffmpeg alsa://plughw:1,0 --input-slave=v4l2:///dev/video0
   ;;
-  "CAMERA" ) # Son ok.
+  "CAMERA" ) # Audio ok.
 #gst-launch-1.0 -vvv rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main ! rtph264depay ! h264parse ! decodebin ! nvvidconv flip-method=0 ! 'video/x-raw(memory:NVMM)' ! nvvidconv ! 'video/x-raw, format=(string)I420' ! nvoverlaysink -e >/dev/null 2>/dev/null &
-vlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main >/dev/null 2>/dev/null &
+cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main >/dev/null 2>/dev/null &
 #mplayer -fs rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main &
   ;;
 esac

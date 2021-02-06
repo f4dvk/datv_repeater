@@ -144,7 +144,7 @@ int main() {
     if (strcmp(Player, "1") == 0)
     {
       //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 0 --marq-size 14 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
+      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 10 --marq-size 16 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
       system(Command);
     }
 
@@ -180,7 +180,7 @@ int main() {
                 system("sudo killall vlc >/dev/null 2>/dev/null");
                 usleep(300);
                 //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 0 --marq-size 14 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
+                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 10 --marq-size 16 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
                 system(Command);
                 LCK=0;
               }

@@ -110,6 +110,24 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   #  cp /home/$USER/datv_repeater/multimon/multimon.desktop /home/$USER/.config/autostart/
   #fi
 
+  echo
+  echo "-----------------------------------------------------"
+  echo "-------------- Installation de dvb2iq ---------------"
+  echo "-----------------------------------------------------"
+
+  git clone https://github.com/f4dvk/limesdr_toolbox
+
+  cd /home/$USER/limesdr_toolbox
+
+  git clone https://github.com/F5OEO/libdvbmod
+  cd libdvbmod/libdvbmod
+  make
+  cd ../DvbTsToIQ/
+  make
+  cp dvb2iq /home/$USER/
+
+  cd /home/$USER
+
 fi
 
 if grep -q "Raspberry" /proc/device-tree/model; then

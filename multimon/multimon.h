@@ -113,9 +113,9 @@ void unexportGPIO(void);
 void initCOM(void);
 void initRX(void);
 void strategy(int bitrate_ts);
-void encoder_start(void);
-void encoder_stop(void);
-void encoder_video(void);
+int encoder_start();
+int encoder_stop();
+int encoder_video();
 void band_select(void);
 
 /* ---------------------------------------------------------------------- */

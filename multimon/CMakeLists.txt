@@ -10,7 +10,17 @@ set( VERSION "1.1.8" )
 set( MAJOR "1" )
 set( MINOR "1" )
 set( PATCH "8" )
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -lcurl -lm" )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextratarg -lm" )
+
+SET(requiredlibs)
+
+find_package( CURL )
+if( CURL_FOUND )
+  include_directories( ${CURL_INCLUDE_DIR} )
+  set( requiredlibs ${requiredlibs} ${CURL_LIBRARIES} )
+else( CURL_FOUND )
+  message( FATAL_ERROR "Could not find the CURL library and development files." )
+endif( CURL_FOUND )
 
 find_package( PulseAudio )
 if ( PULSEAUDIO_FOUND )
@@ -55,5 +65,5 @@ set( SOURCES ${SOURCES}
 
 add_executable( "${TARGET}" ${SOURCES} ${HEADERS} )
 set_property(TARGET "${TARGET}" PROPERTY LINKER_LANGUAGE C)
-target_link_libraries( "${TARGET}" m )
+target_link_libraries( "${TARGET}" m curl )
 install(TARGETS multimon DESTINATION bin)
