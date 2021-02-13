@@ -39,28 +39,47 @@ FRAMES=$(get_config_var frames $PATH_PCONFIG_TX)
 RPIIP=$(get_config_var rpiip $PATH_PCONFIG_USR)
 RPIUSER=$(get_config_var rpiuser $PATH_PCONFIG_USR)
 RPIPW=$(get_config_var rpipw $PATH_PCONFIG_USR)
+Tx=$(get_config_var tx $PATH_PCONFIG_USR)
+PLUTOIP=$(get_config_var plutoip $PATH_PCONFIG_USR)
+QAM=$(get_config_var qam $PATH_PCONFIG_TX)
+GUARD=$(get_config_var guard $PATH_PCONFIG_TX)
 
-/bin/cat <<EOM >$CMDFILE
-  (sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
-  sed -i '/\(^call=\).*/s//\1$CALL/' $PATHCONFIGRPI
-  sed -i '/\(^freq=\).*/s//\1$FREQ/' $PATHCONFIGRPI
-  sed -i '/\(^symbolrate=\).*/s//\1$SYMBOLRATE/' $PATHCONFIGRPI
-  sed -i '/\(^fec=\).*/s//\1$FEC/' $PATHCONFIGRPI
-  sed -i '/\(^mode=\).*/s//\1$MODE/' $PATHCONFIGRPI
-  sed -i '/\(^constellation=\).*/s//\1$CONSTELLATION/' $PATHCONFIGRPI
-  sed -i '/\(^format=\).*/s//\1$FORMAT/' $PATHCONFIGRPI
-  sed -i '/\(^gain=\).*/s//\1$GAIN/' $PATHCONFIGRPI
-  sed -i '/\(^upsample=\).*/s//\1$UPSAMPLE/' $PATHCONFIGRPI
-  sed -i '/\(^codec=\).*/s//\1$CODEC/' $PATHCONFIGRPI
-  sed -i '/\(^pilots=\).*/s//\1$PILOTS/' $PATHCONFIGRPI
-  sed -i '/\(^frames=\).*/s//\1$FRAMES/' $PATHCONFIGRPI
-  sleep 1
-  /home/pi/datv_repeater/dvbtx/scripts/tx_rpi.sh >/dev/null 2>/dev/null &
-  /home/pi/datv_repeater/dvbtx/scripts/watchdog.sh >/dev/null 2>/dev/null &
+if [ "$Tx" != "pluto" ]; then
+  /bin/cat <<EOM >$CMDFILE
+    (sshpass -p $RPIPW ssh -o StrictHostKeyChecking=no $RPIUSER@$RPIIP 'bash -s' <<'ENDSSH'
+    sed -i '/\(^call=\).*/s//\1$CALL/' $PATHCONFIGRPI
+    sed -i '/\(^freq=\).*/s//\1$FREQ/' $PATHCONFIGRPI
+    sed -i '/\(^symbolrate=\).*/s//\1$SYMBOLRATE/' $PATHCONFIGRPI
+    sed -i '/\(^fec=\).*/s//\1$FEC/' $PATHCONFIGRPI
+    sed -i '/\(^mode=\).*/s//\1$MODE/' $PATHCONFIGRPI
+    sed -i '/\(^constellation=\).*/s//\1$CONSTELLATION/' $PATHCONFIGRPI
+    sed -i '/\(^format=\).*/s//\1$FORMAT/' $PATHCONFIGRPI
+    sed -i '/\(^gain=\).*/s//\1$GAIN/' $PATHCONFIGRPI
+    sed -i '/\(^upsample=\).*/s//\1$UPSAMPLE/' $PATHCONFIGRPI
+    sed -i '/\(^codec=\).*/s//\1$CODEC/' $PATHCONFIGRPI
+    sed -i '/\(^pilots=\).*/s//\1$PILOTS/' $PATHCONFIGRPI
+    sed -i '/\(^frames=\).*/s//\1$FRAMES/' $PATHCONFIGRPI
+    sleep 1
+    /home/pi/datv_repeater/dvbtx/scripts/tx_rpi.sh >/dev/null 2>/dev/null &
+    /home/pi/datv_repeater/dvbtx/scripts/watchdog.sh >/dev/null 2>/dev/null &
 ENDSSH
-) &
+    ) &
 EOM
 
-source "$CMDFILE"
+  source "$CMDFILE"
+
+elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVB-T" ]; then
+
+  let FECNUM=FEC
+  let FECDEN=FEC+1
+
+  # awk affiche en exposant si la fréquence est supérieure à 2147 MHz
+  FREQ_OUTPUTHZ=`echo - | awk '{print '$FREQ' * 100000}'`
+  FREQ_OUTPUTHZ="$FREQ_OUTPUTHZ"0
+
+  /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack -m $QAM -f $FREQ_OUTPUTHZ -a $GAIN -r pluto \
+    -g 1/"$GUARD" -b $SYMBOLRATE -p 1314 -e "$FECNUM"/"$FECDEN" -n $PLUTOIP -i /dev/null &
+
+fi
 
 exit

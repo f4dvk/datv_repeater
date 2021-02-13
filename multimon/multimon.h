@@ -112,10 +112,14 @@ void exportGPIO(void);
 void unexportGPIO(void);
 void initCOM(void);
 void initRX(void);
+void GetIPAddr(char IPAddress[20]);
 void strategy(int bitrate_ts);
+int encoder_start_dvbt();
+int encoder_stop_dvbt();
 int encoder_start();
 int encoder_stop();
 int encoder_video();
+int encoder_video_dvbt();
 void band_select(void);
 
 /* ---------------------------------------------------------------------- */

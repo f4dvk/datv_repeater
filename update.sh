@@ -15,6 +15,23 @@ sudo killall limesdr_dvb >/dev/null 2>/dev/null
 sudo apt-get update
 sudo apt-get -y dist-upgrade
 
+if [ ! -d  /home/$USER/libiio ]; then
+  echo "Installation libiio"
+  echo
+  sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev
+  sudo apt-get -y install libaio-dev libserialport-dev libavahi-client-dev
+  cd /home/$USER
+  git clone https://github.com/analogdevicesinc/libiio.git
+  cd libiio
+  cmake ./
+  make all
+  sudo make install
+  cd /home/$USER
+else
+  echo "libiio déjà installé"
+  echo
+fi
+
 echo
 echo "-----------------------------------------------------"
 echo "---------- Sauvegarde des fichiers config -----------"
@@ -77,7 +94,7 @@ echo "-----------------------------------------------------"
 
 cd /home/$USER
 
-cp -f -r "$BAKUP"/config.txt "$CONFIG"/config.txt
+cp -f -r "$BACKUP"/config.txt "$CONFIG"/config.txt
 
 echo
 echo "-----------------------------------------------------"

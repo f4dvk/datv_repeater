@@ -28,6 +28,16 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   sudo apt-get -y install libusb-1.0-0-dev # longmynd
   sudo apt-get install libcurl4-openssl-dev # Command encodeur H.264 / H.265
 
+  sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev                   # libiio
+  sudo apt-get -y install libaio-dev libserialport-dev libavahi-client-dev             # libiio
+
+  cd /home/$USER
+  git clone https://github.com/analogdevicesinc/libiio.git
+  cd libiio
+  cmake ./
+  make all
+  sudo make install
+
   # gstreamer
   # sudo apt-get -y install python-gst-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-tools
 
@@ -37,22 +47,22 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
 
   cd /home/$USER
 
-  echo
-  echo "-----------------------------------------------------"
-  echo "---------------- Installation de VNC ----------------"
-  echo "-----------------------------------------------------"
+  #echo
+  #echo "-----------------------------------------------------"
+  #echo "---------------- Installation de VNC ----------------"
+  #echo "-----------------------------------------------------"
 
-  sudo apt-get install tigervnc-scraping-server
-  sudo apt-get install git psmisc
+  #sudo apt-get install tigervnc-scraping-server
+  #sudo apt-get install git psmisc
 
-  mkdir -p ~/.vnc
+  #mkdir -p ~/.vnc
 
   # Enregistrer un mot de passe
   # vncpasswd
 
-  git clone https://github.com/sebestyenistvan/runvncserver
-  cp ~/runvncserver/startvnc ~
-  chmod +x ~/startvnc
+  #git clone https://github.com/sebestyenistvan/runvncserver
+  #cp ~/runvncserver/startvnc ~
+  #chmod +x ~/startvnc
 
   # Démarrage suto:
   # echo "/home/$USER/startvnc start >/dev/null 2>&1" >> ~/.xsessionrc
@@ -128,6 +138,21 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
 
   cd /home/$USER
 
+  echo
+  echo "-----------------------------------------------------"
+  echo "------------ Installation de dvb_t_stack ------------"
+  echo "-----------------------------------------------------"
+
+  cd /home/$USER/datv_repeater/dvb_t_stack/Release
+  make clean
+  make
+  cp dvb_t_stack /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack
+
+  #cd /home/$USER/datv_repeater/dvb_t_stack
+  #sudo cp datvexpress16.ihx /lib/firmware/datvexpress/datvexpress16.ihx
+  #sudo cp datvexpressraw16.rbf /lib/firmware/datvexpress/datvexpressraw16.rbf
+  cd /home/$USER
+
 fi
 
 if grep -q "Raspberry" /proc/device-tree/model; then
@@ -153,6 +178,16 @@ if grep -q "Raspberry" /proc/device-tree/model; then
   sudo apt-get -y install libavcodec-dev libavformat-dev libswscale-dev libavdevice-dev # ffmpegsrc.cpp
 
   #sudo apt-get -y install xscreensaver # utilitaire pour désactiver la mise en veille
+
+  sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev                   # libiio
+  sudo apt-get -y install libaio-dev libserialport-dev libavahi-client-dev             # libiio
+
+  cd /home/pi
+  git clone https://github.com/analogdevicesinc/libiio.git
+  cd libiio
+  cmake ./
+  make all
+  sudo make install
 
   cd /home/pi
 
@@ -261,6 +296,21 @@ if grep -q "Raspberry" /proc/device-tree/model; then
   cp limesdr_forward /home/pi/datv_repeater/dvbtx/bin/
   make dvb
   cp limesdr_dvb /home/pi/datv_repeater/dvbtx/bin/
+  cd /home/pi
+
+  echo
+  echo "-----------------------------------------------------"
+  echo "------------ Installation de dvb_t_stack ------------"
+  echo "-----------------------------------------------------"
+
+  cd /home/pi/datv_repeater/dvb_t_stack/Release
+  make clean
+  make
+  cp dvb_t_stack /home/pi/datv_repeater/dvbtx/bin/dvb_t_stack
+
+  #cd /home/pi/datv_repeater/dvb_t_stack
+  #sudo cp datvexpress16.ihx /lib/firmware/datvexpress/datvexpress16.ihx
+  #sudo cp datvexpressraw16.rbf /lib/firmware/datvexpress/datvexpressraw16.rbf
   cd /home/pi
 
 fi

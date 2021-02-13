@@ -268,6 +268,24 @@ void initRX(void)
   RX=8;
 }
 
+void GetIPAddr(char IPAddress[20])
+{
+  FILE *fp;
+
+  fp = popen("ip -f inet -o addr show eth0 | cut -d\  -f 7 | cut -d/ -f 1", "r");
+  if (fp == NULL) {
+    printf("Erreur Commande IP\n" );
+    exit(1);
+  }
+
+  while (fgets(IPAddress, 16, fp) != NULL)
+  {
+    //printf("%s", IPAddress);
+  }
+
+  pclose(fp);
+}
+
 void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 {
   char calcul[150];
@@ -363,6 +381,120 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   snprintf(Resolution, 10, "%dx%d", VIDEO_WIDTH, VIDEO_HEIGHT);
   printf("Video Bitrate: %d Resolution: %s at %d\n", atoi(new_bitrate), Resolution, Fps);
+}
+
+int encoder_start_dvbt()
+{
+  char Ip[20];
+  char PlutoIp[20];
+  char ServeurIp[20];
+  char ServeurPort[10];
+  char Url[60];
+  char Body[500];
+
+  char result[20];
+
+  GetIPAddr(result);
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
+  GetConfigParam(PATH_PCONFIG,"serveurip", ServeurIp);
+  GetConfigParam(PATH_PCONFIG,"serveurport", ServeurPort);
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=multicast", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 500, " <request><multicast>\
+          <mcast>\
+          <active>1</active>\
+          <port>%s</port>\
+          <addr>%s</addr>\
+          </mcast>\
+          <mcast>\
+          <active>1</active>\
+          <port>1314</port>\
+          <addr>%s</addr>\
+          </mcast>\
+          </multicast></request>", ServeurPort, ServeurIp, result);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  /* Clean up after yourself */
+  curl_easy_cleanup(curl);
+  return 0;
+}
+
+int encoder_stop_dvbt()
+{
+  char Ip[20];
+  char PlutoIp[20];
+  char ServeurIp[20];
+  char ServeurPort[10];
+  char Url[60];
+  char Body[500];
+
+  char result[20];
+
+  GetIPAddr(result);
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
+  GetConfigParam(PATH_PCONFIG,"serveurip", ServeurIp);
+  GetConfigParam(PATH_PCONFIG,"serveurport", ServeurPort);
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=multicast", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 500, " <request><multicast>\
+          <mcast>\
+          <active>1</active>\
+          <port>%s</port>\
+          <addr>%s</addr>\
+          </mcast>\
+          <mcast>\
+          <active>0</active>\
+          <port>1314</port>\
+          <addr>%s</addr>\
+          </mcast>\
+          </multicast></request>", ServeurPort, ServeurIp, result);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  /* Clean up after yourself */
+  curl_easy_cleanup(curl);
+  return 0;
 }
 
 int encoder_start()
@@ -628,6 +760,141 @@ int encoder_video()
   curl_easy_cleanup(curl);
   return 0;
 }
+
+int encoder_video_dvbt()
+{
+  char command[150];
+  char Ip[20];
+  char Sr[10];
+  char Fec[10];
+  char Codec[10];
+  int fec_num;
+  int fec_den;
+  char bitrate[10];
+  char Qam[10];
+  char Guard[10];
+  int BitsPerSymbol;
+  int Bitrate_TS;
+  int Bitrate_Video;
+  int Fps=20;
+  int VIDEO_WIDTH;
+  int VIDEO_HEIGHT;
+
+  char Url[60];
+  char Body[350];
+
+  GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
+  GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
+  GetConfigParam(PATH_PCONFIG_TX,"codec", Codec);
+  GetConfigParam(PATH_PCONFIG_TX,"qam", Qam);
+  GetConfigParam(PATH_PCONFIG_TX,"guard", Guard);
+
+  if (strcmp (Qam, "qpsk") == 0)
+  {
+    BitsPerSymbol=2;
+  }
+  else if (strcmp (Qam, "16qam") == 0)
+  {
+    BitsPerSymbol=4;
+  }
+  else if (strcmp (Qam, "64qam") == 0)
+  {
+    BitsPerSymbol=6;
+  }
+  else
+  {
+    BitsPerSymbol=2;
+  }
+
+  if (strcmp (Codec, "H265") == 0)
+  {
+    strcpy(Codec, "1");  // H265
+  }
+  else
+  {
+    strcpy(Codec, "0");  // H264
+  }
+
+  fec_num = atoi(Fec);
+  fec_den = atoi(Fec)+1;
+
+  /// Calcul BATC ///
+  Bitrate_TS=423*(atoi(Sr)*1000);
+  Bitrate_TS=Bitrate_TS*atoi(fec_num);
+  Bitrate_TS=Bitrate_TS*BitsPerSymbol;
+  Bitrate_TS=Bitrate_TS*atoi(Guard);
+
+  Bitrate_TS=Bitrate_TS/atoi(fec_den);
+  Bitrate_TS=Bitrate_TS/(atoi(Guard)+1);
+  Bitrate_TS=Bitrate_TS/544;
+
+  //int Margin=100;
+  //Bitrate_TS=Bitrate_TS*Margin;
+  //Bitrate_TS=Bitrate_TS/100;
+
+  Bitrate_Video=(Bitrate_TS-24000-((32000)*15/10))*725/1000;
+
+  Bitrate_Video=Bitrate_Video/1000;
+
+  if (Bitrate_Video < 190)
+  {
+    VIDEO_WIDTH=704;
+    VIDEO_HEIGHT=576;
+    Fps=25;
+  }
+  else
+  {
+    VIDEO_WIDTH=352;
+    VIDEO_HEIGHT=288;
+    Fps=25;
+  }
+
+  if (Bitrate_Video < 100)
+  {
+    VIDEO_WIDTH=160;
+    VIDEO_HEIGHT=120;
+  }
+
+  snprintf(Resolution, 10, "%dx%d", VIDEO_WIDTH, VIDEO_HEIGHT);
+  printf("Video Bitrate: %d Resolution: %s at %d\n", Bitrate_Video, Resolution, Fps);
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=videoenc&stream=1", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 350, " <request><videoenc>\
+          <codec>%s</codec>\
+          <resolution>%s</resolution>\
+          <framerate>%d</framerate>\
+          <audioenc>1</audioenc>\
+          <rc>1</rc>\
+          <keygop>100</keygop>\
+          <bitrate>%d</bitrate>\
+          <quality>5</quality>\
+          <profile>0</profile>\
+          </videoenc></request>", Codec, Resolution, Fps, Bitrate_Video);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  curl_easy_cleanup(curl);
+  return 0;
+}
 /* ---------------------------------------------------------------------- */
 
 static int find_max_idx(const float *f)
@@ -757,6 +1024,7 @@ void loop(void)
 {
   if (load == 0)
   {
+    system("pqiv --fullscreen --hide-info-box /home/$USER/datv_repeater/media/f5zbc.gif &");
     initGPIO();
     initCOM();
     TX_LOW();
@@ -821,7 +1089,7 @@ void Commande(void)
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS2");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "8PSK");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "92");
-          SetConfigParam(PATH_PCONFIG_TX, "fec", "5");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
           usleep(100);
           TX_145=1;
           band_select();
@@ -968,6 +1236,37 @@ void Commande(void)
           {
             system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           }
+          top=time(NULL);
+          topPTT=time(NULL);
+          vocal();
+        }
+      }
+      else erreur();
+    }
+    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 7) && (Cod>0)) // Code *07
+    {
+      if (RX_437 == 0){
+        if (TX != 7){
+          TX_LOW();
+          usleep(800);
+          verbprintf(0,"TX 437MHz DVB-T 250\n");
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
+          SetConfigParam(PATH_PCONFIG_TX, "mode", "DVB-T");
+          SetConfigParam(PATH_PCONFIG_TX, "qam", "qpsk");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "2");
+          SetConfigParam(PATH_PCONFIG_TX, "guard", "32");
+          usleep(100);
+          TX_437=1;
+          band_select();
+          TX=7;
+          emission=1;
+          if (strcmp (Tx, "pluto") == 0)
+          {
+            encoder_video_dvbt();
+            encoder_start_dvbt();
+          }
+          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -1158,15 +1457,15 @@ void Commande(void)
 
 void tempo_TX(void)
 {
-    if ((emission == 1) && (((unsigned long)difftime(Time, top)) > delai_TX*60)){
-      verbprintf(0,"Tempo de fin TX\n");
-      TX_LOW();
-      RX_LOW();
-      usleep(500);
-      RX=8;
-      //digitalWrite (all_videos, LOW);
-      vocal();
-    }
+  if ((emission == 1) && (((unsigned long)difftime(Time, top)) > delai_TX*60))
+  {
+    verbprintf(0,"Tempo de fin TX\n");
+    TX_LOW();
+    RX_LOW();
+    //usleep(500);
+    initRX();
+    vocal();
+  }
 }
 
 void band_select(void)
@@ -1209,9 +1508,13 @@ void Ptt(void)
 
 void TX_LOW(void)
 {
+  GetConfigParam(PATH_PCONFIG,"tx", Tx);
+
   if (strcmp (Tx, "pluto") == 0)
   {
   	encoder_stop();
+    encoder_stop_dvbt();
+    system("sudo killall dvb_t_stack >/dev/null 2>/dev/null");
   }
   else // Limesdr via raspberry
   {

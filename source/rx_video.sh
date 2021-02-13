@@ -34,13 +34,13 @@ sink_1::height=360 sink_2::xpos=0 sink_2::ypos=360 sink_2::width=640 sink_2::hei
 sink_0::alpha=1.0 sink_1::alpha=1.0 sink_2::alpha=1.0 sink_3::alpha=1.0 ! queue2 ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvoverlaysink sync=false \
 videotestsrc ! textoverlay text="F5ZBC   http://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 66" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
 rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main ! queue ! application/x-rtp, media=video, framerate=30, encoding-name=H264 ! rtph264depay ! h264parse ! decodebin ! nvvidconv ! 'video/x-raw(memory:NVMM), width=640, height=360, format=(string)I420' ! nvvidconv ! queue2 ! mix.sink_1 \
-multifilesrc location=/home/$USER/datv_repeater/film/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
+multifilesrc location=/home/$USER/datv_repeater/media/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
 'video/x-raw(memory:NVMM), width=640, height=360, framerate=30/1, format=(string)I420' ! nvvidconv ! alpha alpha=1.0 ! queue2 ! mix.sink_2 \
 videotestsrc ! textoverlay text="JN19PG" valignment=center halignment=center font-desc="Sans, 70" ! video/x-raw, width=640, height=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_3 >/dev/null 2>/dev/null & # video en format mpg, sinon pas de fonctionnement de la boucle.
   ;;
   "FILM" )
 #mpv --fs --no-cache --no-terminal --loop-playlist=inf /home/$USER/datv_repeater/film.mp4 >/dev/null 2>/dev/null &
-cvlc -f --repeat --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeater/film/film.mpg >/dev/null 2>/dev/null &
+cvlc -f --repeat --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeater/media/film.mpg >/dev/null 2>/dev/null &
   ;;
   "HDMI" ) # Audio ok voir pour détecter automatiquement l'entrée HDMI
 #gst-launch-1.0 -q v4l2src device=/dev/video0 ! 'video/x-raw, width=720, height=480, format=(string)YUY2, framerate=30/1' ! nvvidconv ! 'video/x-raw(memory:NVMM), width=(int)720, height=(int)480, framerate=(fraction)30/1' ! nvoverlaysink -e >/dev/null 2>/dev/null &

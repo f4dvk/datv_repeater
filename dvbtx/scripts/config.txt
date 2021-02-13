@@ -8,3 +8,5 @@ upsample=4
 codec=H264
 pilots=off
 frames=long
+qam=qpsk
+guard=32
