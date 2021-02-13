@@ -774,7 +774,7 @@ int encoder_video_dvbt()
   char Qam[10];
   char Guard[10];
   int BitsPerSymbol;
-  int Bitrate_TS;
+  long long Bitrate_TS;
   int Bitrate_Video;
   int Fps=20;
   int VIDEO_WIDTH;
@@ -821,11 +821,11 @@ int encoder_video_dvbt()
 
   /// Calcul BATC ///
   Bitrate_TS=423*(atoi(Sr)*1000);
-  Bitrate_TS=Bitrate_TS*atoi(fec_num);
+  Bitrate_TS=Bitrate_TS*fec_num;
   Bitrate_TS=Bitrate_TS*BitsPerSymbol;
   Bitrate_TS=Bitrate_TS*atoi(Guard);
 
-  Bitrate_TS=Bitrate_TS/atoi(fec_den);
+  Bitrate_TS=Bitrate_TS/fec_den;
   Bitrate_TS=Bitrate_TS/(atoi(Guard)+1);
   Bitrate_TS=Bitrate_TS/544;
 
