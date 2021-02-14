@@ -253,10 +253,35 @@ void initGPIO(void)
 
 void initCOM(void)
 {
+  char USB[8];
+  char commande[150];
+
+  FILE *fp;
+
+  fp = popen("dmesg | grep ttyUSB | grep ch341 | awk '{printf $NF}'", "r");
+  if (fp == NULL) {
+    printf("Erreur Commande recherche nom USB\n" );
+    exit(1);
+  }
+
+  while (fgets(USB, 8, fp) != NULL)
+  {
+    //printf("%s", USB);
+  }
+
+  pclose(fp);
+
   system("sudo killall cat >/dev/null 2>/dev/null");
-  system("sudo chmod o+rw /dev/ttyUSB0");
-  system("stty 9600 -F /dev/ttyUSB0 raw -echo");
-  system("cat /dev/ttyUSB0 >/dev/null 2/dev/null &");
+
+  snprintf(commande, 150, "sudo chmod o+rw /dev/%s", USB);
+  system(commande);
+
+  snprintf(commande, 150, "stty 9600 -F /dev/%s raw -echo", USB);
+  system(commande);
+
+  snprintf(commande, 150, "cat /dev/%s >/dev/null 2/dev/null &", USB);
+  system(commande);
+
 }
 
 void initRX(void)
