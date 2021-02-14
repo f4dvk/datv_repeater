@@ -81,7 +81,7 @@ char path4[630];
 
 char Tx[10];
 FILE *dvb;
-const char* user;
+char user[30];
 
 /////////////////// VIDEO //////////////////
 char Resolution[10];
@@ -272,7 +272,7 @@ void GetIPAddr(char IPAddress[20])
 {
   FILE *fp;
 
-  fp = popen("ip -f inet -o addr show eth0 | cut -d\  -f 7 | cut -d/ -f 1", "r");
+  fp = popen("ip -f inet -o addr show eth0 | cut -d\'\\\'  -f 7 | cut -d/ -f 1", "r");
   if (fp == NULL) {
     printf("Erreur Commande IP\n" );
     exit(1);
@@ -291,7 +291,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   char calcul[150];
 
   int Audio_b=32000;
-  int AUDIOCHANNELS=2;
+  //int AUDIOCHANNELS=2;
   int VIDEO_WIDTH=1920;
   int VIDEO_HEIGHT=1080;
 
@@ -308,7 +308,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   if (new_bitrate_v < 1200)
   {
-    AUDIOCHANNELS=2;
+    //AUDIOCHANNELS=2;
     Fps=25;
     VIDEO_WIDTH=1280;
     VIDEO_HEIGHT=720;
@@ -324,7 +324,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   if (new_bitrate_v < 400)
   {
-    AUDIOCHANNELS=2;
+    //AUDIOCHANNELS=2;
     Fps=25;
     VIDEO_WIDTH=768;
     VIDEO_HEIGHT=432;
@@ -340,7 +340,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   if (new_bitrate_v < 250)
   {
-    AUDIOCHANNELS=1;
+    //AUDIOCHANNELS=1;
     VIDEO_WIDTH=576;
     VIDEO_HEIGHT=324;
     Fps=15;
@@ -356,7 +356,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   if (new_bitrate_v < 200)
   {
-    AUDIOCHANNELS=1;
+    //AUDIOCHANNELS=1;
     VIDEO_WIDTH=384;
     VIDEO_HEIGHT=216;
     Fps=15;
@@ -372,7 +372,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   if (new_bitrate_v < 100)
   {
-    AUDIOCHANNELS=1;
+    //AUDIOCHANNELS=1;
     VIDEO_WIDTH=384;
     VIDEO_HEIGHT=216;
     Fps=10;
@@ -763,14 +763,12 @@ int encoder_video()
 
 int encoder_video_dvbt()
 {
-  char command[150];
   char Ip[20];
   char Sr[10];
   char Fec[10];
   char Codec[10];
   int fec_num;
   int fec_den;
-  char bitrate[10];
   char Qam[10];
   char Guard[10];
   int BitsPerSymbol;
@@ -837,7 +835,7 @@ int encoder_video_dvbt()
 
   Bitrate_Video=Bitrate_Video/1000;
 
-  if (Bitrate_Video < 190)
+  if (Bitrate_Video > 190)
   {
     VIDEO_WIDTH=704;
     VIDEO_HEIGHT=576;
@@ -847,7 +845,7 @@ int encoder_video_dvbt()
   {
     VIDEO_WIDTH=352;
     VIDEO_HEIGHT=288;
-    Fps=25;
+    //Fps=25;
   }
 
   if (Bitrate_Video < 100)
@@ -857,7 +855,7 @@ int encoder_video_dvbt()
   }
 
   snprintf(Resolution, 10, "%dx%d", VIDEO_WIDTH, VIDEO_HEIGHT);
-  printf("Video Bitrate: %d Resolution: %s at %d\n", Bitrate_Video, Resolution, Fps);
+  printf("DVB-T Video Bitrate: %d Resolution: %s at %d\n", Bitrate_Video, Resolution, Fps);
 
   CURL *curl;
   CURLcode res;
@@ -1024,10 +1022,12 @@ void loop(void)
 {
   if (load == 0)
   {
-    system("pqiv --fullscreen --hide-info-box /home/$USER/datv_repeater/media/f5zbc.gif &");
+    system("pqiv --fullscreen --hide-info-box /home/$USER/datv_repeater/media/image.gif &");
     initGPIO();
     initCOM();
     TX_LOW();
+    encoder_stop();
+    encoder_stop_dvbt();
     RX_LOW();
     initRX();
     load=1;

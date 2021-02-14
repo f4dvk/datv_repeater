@@ -10,7 +10,7 @@ set( VERSION "1.1.8" )
 set( MAJOR "1" )
 set( MINOR "1" )
 set( PATCH "8" )
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextratarg -lm" )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -lm" )
 
 SET(requiredlibs)
 
