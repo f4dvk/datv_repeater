@@ -297,7 +297,7 @@ void GetIPAddr(char IPAddress[20])
 {
   FILE *fp;
 
-  fp = popen("ip -f inet -o addr show eth0 | cut -d\'\\\'  -f 7 | cut -d/ -f 1", "r");
+  fp = popen("ip -f inet -o addr show eth0 | cut -d\\  -f 7 | cut -d/ -f 1 | awk 1 ORS=", "r");
   if (fp == NULL) {
     printf("Erreur Commande IP\n" );
     exit(1);
@@ -449,6 +449,11 @@ int encoder_start_dvbt()
           <port>1314</port>\
           <addr>%s</addr>\
           </mcast>\
+          <mcast>\
+          <active>0</active>\
+          <port>999</port>\
+          <addr>192.168.10.20</addr>\
+          </mcast>\
           </multicast></request>", ServeurPort, ServeurIp, result);
 
   char *body = Body;
@@ -505,6 +510,11 @@ int encoder_stop_dvbt()
           <active>0</active>\
           <port>1314</port>\
           <addr>%s</addr>\
+          </mcast>\
+          <mcast>\
+          <active>0</active>\
+          <port>999</port>\
+          <addr>192.168.10.20</addr>\
           </mcast>\
           </multicast></request>", ServeurPort, ServeurIp, result);
 
@@ -1067,8 +1077,6 @@ void loop(void)
     initGPIO();
     initCOM();
     TX_LOW();
-    encoder_stop();
-    encoder_stop_dvbt();
     RX_LOW();
     initRX();
     load=1;
@@ -1284,7 +1292,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 7) && (Cod>0)) // Code *07
+    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 8) && (Cod>0)) // Code *07
     {
       if (RX_437 == 0){
         if (TX != 7){
@@ -1553,7 +1561,7 @@ void TX_LOW(void)
 
   if (strcmp (Tx, "pluto") == 0)
   {
-  	encoder_stop();
+    encoder_stop();
     encoder_stop_dvbt();
     system("sudo killall dvb_t_stack >/dev/null 2>/dev/null");
   }
