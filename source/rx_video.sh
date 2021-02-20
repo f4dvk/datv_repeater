@@ -45,7 +45,7 @@ cvlc -f --repeat --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeate
   ;;
   "HDMI" ) # Audio ok voir pour détecter automatiquement l'entrée HDMI
 #gst-launch-1.0 -q v4l2src device=/dev/video0 ! 'video/x-raw, width=720, height=480, format=(string)YUY2, framerate=30/1' ! nvvidconv ! 'video/x-raw(memory:NVMM), width=(int)720, height=(int)480, framerate=(fraction)30/1' ! nvoverlaysink -e >/dev/null 2>/dev/null &
-cvlc -f --codec ffmpeg alsa://plughw:1,0 --input-slave=v4l2:///dev/video0
+cvlc -f --codec ffmpeg alsa://plughw:1,0 --input-slave=v4l2:///dev/video0 &
   ;;
   "CAMERA" ) # Audio ok.
 if [ "$TYPE_CAM" == "1" ]; then

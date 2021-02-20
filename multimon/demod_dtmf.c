@@ -70,6 +70,9 @@ int OK=false;
 int Cod=0;
 int Cd;
 
+//////////////////// USB ///////////////////
+char USB[8];
+
 ///////////////// COMMANDE /////////////////
 int emission,val_RX_DATV,freq1,freq2,freq3,RX_437,RX_145,RX_1255,TX_437,TX_145,TX_1255;
 int TX=0;
@@ -253,7 +256,6 @@ void initGPIO(void)
 
 void initCOM(void)
 {
-  char USB[8];
   char commande[150];
 
   FILE *fp;
@@ -649,7 +651,7 @@ int encoder_stop()
   GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
   GetConfigParam(PATH_PCONFIG_TX,"constellation", Constellation);
 
-  if (strcmp (Mode, "DVBS") == 0)
+  if ((strcmp (Mode, "DVBS") == 0) || (strcmp (Mode, "DVBT") == 0))
   {
     fec_num = atoi(Fec);
     fec_den = atoi(Fec)+1;
@@ -1090,6 +1092,7 @@ void loop(void)
 
 void Commande(void)
 {
+  char COM_USB[40];
   GetConfigParam(PATH_PCONFIG,"tx", Tx);
   usleep(100);
 
@@ -1417,8 +1420,10 @@ void Commande(void)
       if (TX_437 == 0){
         RX_LOW();
         usleep(500);
-        system("echo 'OUTA_1'>/dev/ttyUSB0");
-        system("echo 'OUTB_1'>/dev/ttyUSB0");
+        snprintf(COM_USB, 40, "echo 'OUTA_1'>/dev/%s", USB);
+        system(COM_USB);
+        snprintf(COM_USB, 40, "echo 'OUTB_1'>/dev/%s", USB);
+        system(COM_USB);
         verbprintf(0,"RX 437MHz TNT\n");
         RX_437=1;
         //band_select();
@@ -1453,8 +1458,10 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
-      system("echo 'OUTA_2'>/dev/ttyUSB0");
-      system("echo 'OUTB_2'>/dev/ttyUSB0");
+      snprintf(COM_USB, 40, "echo 'OUTA_2'>/dev/%s", USB);
+      system(COM_USB);
+      snprintf(COM_USB, 40, "echo 'OUTB_2'>/dev/%s", USB);
+      system(COM_USB);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"RESERVE\n");
@@ -1465,8 +1472,10 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
-      system("echo 'OUTA_3'>/dev/ttyUSB0");
-      system("echo 'OUTB_3'>/dev/ttyUSB0");
+      snprintf(COM_USB, 40, "echo 'OUTA_3'>/dev/%s", USB);
+      system(COM_USB);
+      snprintf(COM_USB, 40, "echo 'OUTB_3'>/dev/%s", USB);
+      system(COM_USB);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       verbprintf(0,"RESERVE\n");
