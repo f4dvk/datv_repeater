@@ -68,7 +68,7 @@ EOM
 
   source "$CMDFILE"
 
-elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVB-T" ]; then
+elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVBT" ]; then
 
   let FECNUM=FEC
   let FECDEN=FEC+1

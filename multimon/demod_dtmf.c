@@ -732,7 +732,7 @@ int encoder_video()
     strcpy(Codec, "0");  // H264
   }
 
-  if (strcmp (Mode, "DVBS") == 0)
+  if ((strcmp (Mode, "DVBS") == 0) || (strcmp (Mode, "DVBT") == 0))
   {
     fec_num = atoi(Fec);
     fec_den = atoi(Fec)+1;
@@ -1300,7 +1300,7 @@ void Commande(void)
           usleep(800);
           verbprintf(0,"TX 437MHz DVB-T 250\n");
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
-          SetConfigParam(PATH_PCONFIG_TX, "mode", "DVB-T");
+          SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBT");
           SetConfigParam(PATH_PCONFIG_TX, "qam", "qpsk");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
           SetConfigParam(PATH_PCONFIG_TX, "fec", "2");
@@ -1313,9 +1313,12 @@ void Commande(void)
           if (strcmp (Tx, "pluto") == 0)
           {
             encoder_video_dvbt();
-            encoder_start_dvbt();
+            encoder_start();
           }
-          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          else
+          {
+            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
+          }
           top=time(NULL);
           topPTT=time(NULL);
           vocal();

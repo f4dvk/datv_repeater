@@ -124,7 +124,7 @@ if [ "$FORMAT" == "16:9" ]; then
   VIDEO_HEIGHT=400
 fi
 
-if [ "$MODE" == "DVB-T" ]; then
+if [ "$MODE" == "DVBT" ]; then
   source /home/pi/datv_repeater/dvbtx/scripts/bitrate_dvb-t.sh
 fi
 
@@ -133,7 +133,7 @@ sudo rm audioin.wav >/dev/null 2>/dev/null
 mkfifo audioin.wav
 v4l2-ctl --device=/dev/video0 --set-fmt-video=width=720,height=480,pixelformat=1 --set-parm=30
 
-if [ "$MODE" != "DVB-T" ]; then
+if [ "$MODE" != "DVBT" ]; then
   mkfifo videots
   SORTIE_FICHIER="-o videots"
   SORTIE_IP=""
