@@ -77,7 +77,10 @@ elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVB-T" ]; then
   FREQ_OUTPUTHZ=`echo - | awk '{print '$FREQ' * 100000}'`
   FREQ_OUTPUTHZ="$FREQ_OUTPUTHZ"0
 
-  /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack -m $QAM -f $FREQ_OUTPUTHZ -a $GAIN -r pluto \
+  #Gain_Pluto=`echo - | awk '{print ('$GAIN' / 100)* 89.74+-89.74}' | awk '{printf("%.0f", $0);}'`
+  Gain_Pluto=`echo - | awk '{print ('$GAIN' / 100)* 71+-71}' | awk '{printf("%.0f", $0);}'`
+
+  /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack -m $QAM -f $FREQ_OUTPUTHZ -a $Gain_Pluto -r pluto \
     -g 1/"$GUARD" -b $SYMBOLRATE -p 1314 -e "$FECNUM"/"$FECDEN" -n $PLUTOIP -i /dev/null &
 
 fi

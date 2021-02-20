@@ -3,6 +3,7 @@ format=16:9
 rpiip=192.168.0.12
 rpiuser=pi
 rpipw=raspberry
+typecamip=1
 camip=192.168.0.37
 camusr=admin
 campw=admin

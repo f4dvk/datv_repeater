@@ -21,7 +21,7 @@ EOF
 CHANNEL="Relais_de_SOISSONS(02)"
 CALL=$(get_config_var call $PATH_PCONFIG_TX)
 FREQ=$(get_config_var freq $PATH_PCONFIG_TX)
-SYMBOLRATE=$(get_config_var symbolrate $PATH_PCONFIG_TX)
+SYMBOLRATEK=$(get_config_var symbolrate $PATH_PCONFIG_TX)
 FEC=$(get_config_var fec $PATH_PCONFIG_TX)
 MODE=$(get_config_var mode $PATH_PCONFIG_TX)
 CONSTELLATION=$(get_config_var constellation $PATH_PCONFIG_TX)
@@ -43,6 +43,8 @@ if [ "$FRAME" == "short" ]; then
 else
   FRAMES=""
 fi
+
+let SYMBOLRATE=SYMBOLRATEK*1000
 
 AUDIO_BITRATE=24000
 PCR_PTS=300 # 200 ?
@@ -122,17 +124,33 @@ if [ "$FORMAT" == "16:9" ]; then
   VIDEO_HEIGHT=400
 fi
 
+if [ "$MODE" == "DVB-T" ]; then
+  source /home/pi/datv_repeater/dvbtx/scripts/bitrate_dvb-t.sh
+fi
+
 sudo rm videots >/dev/null 2>/dev/null
 sudo rm audioin.wav >/dev/null 2>/dev/null
-mkfifo videots
 mkfifo audioin.wav
 v4l2-ctl --device=/dev/video0 --set-fmt-video=width=720,height=480,pixelformat=1 --set-parm=30
-$PATHBIN"/limesdr_dvb" -i videots -s "$SYMBOLRATE"000 -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
--t "$FREQ"e6 -g $LIME_GAINF -q 1 &
+
+if [ "$MODE" != "DVB-T" ]; then
+  mkfifo videots
+  SORTIE_FICHIER="-o videots"
+  SORTIE_IP=""
+  $PATHBIN"/limesdr_dvb" -i videots -s $SYMBOLRATEK -f $FECNUM/$FECDEN -r $UPSAMPLE -m $MODE -c $CONSTELLATION $PILOTS $FRAMES \
+  -t "$FREQ"e6 -g $LIME_GAINF -q 1 &
+elif [ "$MODE" == "DVB-T" ]; then
+  SORTIE_FICHIER=""
+  SORTIE_IP="-n 127.0.0.1:1314"
+  /home/pi/datv_repeater/dvbtx/bin/dvb_t_stack -m $QAM -f $FREQ_OUTPUTHZ -a $LIME_GAINF -r lime \
+    -g 1/"$GUARD" -b $SYMBOLRATE -p 1314 -e "$FECNUM"/"$FECDEN" -i /dev/null &
+fi
+
 arecord -f S16_LE -r 48000 -c 2 -B 55000 -D plughw:1 \
 | sox -c 1 --buffer 1024 -t wav - audioin.wav rate 46500 &
+
 sudo $PATHBIN"/avc2ts" -b $VIDEOBITRATE -m $BITRATE_TS -d $PCR_PTS -x $VIDEO_RESX -y $VIDEO_RESY \
--f $VIDEO_FPS -i $IDR -o videots -t 2 -e /dev/video0 -p 255 -s $CALL \
+-f $VIDEO_FPS -i $IDR $SORTIE_FICHIER -t 2 -e /dev/video0 -p 255 -s $CALL $SORTIE_IP \
 -a audioin.wav -z $AUDIO_BITRATE > /dev/null &
 
 exit

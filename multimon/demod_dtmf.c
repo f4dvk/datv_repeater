@@ -532,6 +532,9 @@ int encoder_start()
   char Constellation[10];
   char Sr[10];
   char Fec[10];
+  char Gain[4];
+  char command[150];
+  char Gain_Pluto[10];
   int fec_num;
   int fec_den;
 
@@ -546,6 +549,19 @@ int encoder_start()
   GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
   GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
   GetConfigParam(PATH_PCONFIG_TX,"constellation", Constellation);
+  GetConfigParam(PATH_PCONFIG_TX,"gain", Gain);
+
+  FILE *gain;
+  snprintf(command, 150, "echo - | awk '{print ('%s' / 100)* 71+-71}'", Gain);
+  gain=popen (command, "r");
+
+  while (fgets(Gain_Pluto, 10, gain) != NULL)
+  {
+    //printf("Gain Pluto: %s", Gain_Pluto);
+  }
+  pclose (gain);
+
+  snprintf(Gain_Pluto, 10, "%.0f", atof(Gain_Pluto));
 
   if (strcmp (Mode, "DVBS") == 0)
   {
@@ -581,8 +597,8 @@ int encoder_start()
           </push>\
           <push>\
           <active>1</active>\
-          <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,-0,nocalib,800,32,/,%s,</url>\
-          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Call);
+          <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,%s,nocalib,800,32,/,%s,</url>\
+          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Gain_Pluto, Call);
 
   char *body = Body;
 

@@ -20,6 +20,7 @@ EOF
 
 SOURCE=$(get_config_var source $PATH_PCONFIG_SRC)
 CALL=$(get_config_var call $PATH_PCONFIG_USR)
+TYPE_CAM=$(get_config_var typecamip $PATH_PCONFIG_USR)
 IP_CAM=$(get_config_var camip $PATH_PCONFIG_USR)
 USR_CAM=$(get_config_var camusr $PATH_PCONFIG_USR)
 PW_CAM=$(get_config_var campw $PATH_PCONFIG_USR)
@@ -47,8 +48,11 @@ cvlc -f --repeat --codec ffmpeg --video-title-timeout=1 /home/$USER/datv_repeate
 cvlc -f --codec ffmpeg alsa://plughw:1,0 --input-slave=v4l2:///dev/video0
   ;;
   "CAMERA" ) # Audio ok.
-#gst-launch-1.0 -vvv rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main ! rtph264depay ! h264parse ! decodebin ! nvvidconv flip-method=0 ! 'video/x-raw(memory:NVMM)' ! nvvidconv ! 'video/x-raw, format=(string)I420' ! nvoverlaysink -e >/dev/null 2>/dev/null &
-cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main >/dev/null 2>/dev/null &
+if [ "$TYPE_CAM" == "1" ]; then
+  cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main >/dev/null 2>/dev/null &
+else
+  cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554/live/ch0 >/dev/null 2>/dev/null &
+fi
 #mplayer -fs rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main &
   ;;
 esac
