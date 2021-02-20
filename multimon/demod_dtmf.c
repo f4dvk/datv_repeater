@@ -573,7 +573,7 @@ int encoder_start()
 
   snprintf(Gain_Pluto, 10, "%.0f", atof(Gain_Pluto));
 
-  if (strcmp (Mode, "DVBS") == 0)
+  if ((strcmp (Mode, "DVBS") == 0) || (strcmp (Mode, "DVBT") == 0))
   {
     fec_num = atoi(Fec);
     fec_den = atoi(Fec)+1;
