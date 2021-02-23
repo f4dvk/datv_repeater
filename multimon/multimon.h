@@ -103,6 +103,8 @@ void Ptt(void);
 void TX_LOW(void);
 void RX_LOW(void);
 void tempo_dtmf(void);
+void tempo_activation(void);
+void kill_ATV(void);
 void tempo_TX(void);
 void Commande(void);
 void vocal(void);
@@ -120,6 +122,7 @@ int encoder_start();
 int encoder_stop();
 int encoder_video();
 int encoder_video_dvbt();
+int encoder_osd();
 void band_select(void);
 
 /* ---------------------------------------------------------------------- */

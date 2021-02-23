@@ -56,7 +56,7 @@
 enum jetsonGPIONumber ptt_vocal = gpio78;
 enum jetsonGPIONumber band_bit0 = gpio16;
 enum jetsonGPIONumber band_bit1 = gpio17;
-//enum jetsonGPIONumber ant_1255 = gpio18;
+enum jetsonGPIONumber Activation = gpio18; // Pin 23
 enum jetsonGPIONumber ptt_145 = gpio13;
 enum jetsonGPIONumber ptt_437 = gpio19;
 enum jetsonGPIONumber ptt_1255 = gpio20;
@@ -75,6 +75,7 @@ char USB[8];
 
 ///////////////// COMMANDE /////////////////
 int emission,val_RX_DATV,freq1,freq2,freq3,RX_437,RX_145,RX_1255,TX_437,TX_145,TX_1255;
+int On=0;
 int TX=0;
 int RX=0;
 char path1[630];
@@ -92,10 +93,17 @@ int Fps=25;
 int bitrate_v;
 char new_bitrate[10];
 
+//////////////////// OSD ///////////////////
+char Actif[2];
+
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
 time_t top;                        // variabe de calcul temps TX
 time_t Time;                       // variabe de calcul temps TX
+
+///////////// TEMPO Activation /////////////
+unsigned long delai_Actif=10;
+time_t top_on;
 
 //////////////// TEMPO DTMF /////////////////
 time_t topD;
@@ -197,7 +205,7 @@ void unexportGPIO(void)
   gpioUnexport(ptt_vocal);
   gpioUnexport(band_bit0);
   gpioUnexport(band_bit1);
-  //gpioUnexport(ant_1255);
+  gpioUnexport(Activation);
   gpioUnexport(ptt_145);
   gpioUnexport(ptt_437);
   gpioUnexport(ptt_1255);
@@ -209,7 +217,7 @@ void exportGPIO(void)
   gpioExport(ptt_vocal);
   gpioExport(band_bit0);
   gpioExport(band_bit1);
-  //gpioExport(ant_1255);
+  gpioExport(Activation);
   gpioExport(ptt_145);
   gpioExport(ptt_437);
   gpioExport(ptt_1255);
@@ -237,7 +245,7 @@ void initGPIO(void)
   gpioSetDirection(ptt_vocal, outputPin);
   gpioSetDirection(band_bit0, outputPin);
   gpioSetDirection(band_bit1, outputPin);
-  //gpioSetDirection(ant_1255, outputPin);
+  gpioSetDirection(Activation, outputPin);
   gpioSetDirection(ptt_145, outputPin);
   gpioSetDirection(ptt_437, outputPin);
   gpioSetDirection(ptt_1255, outputPin);
@@ -246,7 +254,7 @@ void initGPIO(void)
   gpioSetValue(ptt_vocal, low);
   gpioSetValue(band_bit0, low);
   gpioSetValue(band_bit1, low);
-  //gpioSetValue(ant_1255, high);
+  gpioSetValue(Activation, low);
   gpioSetValue(ptt_145, low);
   gpioSetValue(ptt_437, low);
   gpioSetValue(ptt_1255, low);
@@ -761,22 +769,6 @@ int encoder_video()
 
   strategy(atoi(bitrate));
 
-/*  // Bitrate Audio: 32K
-  int new_bitrate = ((atoi(bitrate)-12000-(32000*15/10))*650/1000);
-  new_bitrate = new_bitrate/1000;
-  //printf("Bitrate video: %d kbit/s\n", new_bitrate);
-
-
-  if (new_bitrate < 180) // DVBS 250Ks 3/4 > 185 kbits/s
-  {
-    strcpy(Resolution, "384x216");
-    Fps=20;
-  }
-  else
-  {
-    strcpy(Resolution, "1024x576");
-  }
-*/
   CURL *curl;
   CURLcode res;
 
@@ -946,6 +938,65 @@ int encoder_video_dvbt()
   curl_easy_cleanup(curl);
   return 0;
 }
+
+int encoder_osd()
+{
+  char Ip[20];
+  char X_pos[6];
+  char Y_pos[6];
+  char Taille[4];
+  char Couleur[10];
+  char Texte[20];
+
+  char Url[60];
+  char Body[500];
+
+  GetConfigParam(PATH_PCONFIG, "encoderip", Ip);
+  GetConfigParam(PATH_PCONFIG, "osd", Actif);
+  GetConfigParam(PATH_PCONFIG, "xpos", X_pos);
+  GetConfigParam(PATH_PCONFIG, "ypos", Y_pos);
+  GetConfigParam(PATH_PCONFIG, "taille", Taille);
+  GetConfigParam(PATH_PCONFIG, "couleur", Couleur);
+  GetConfigParam(PATH_PCONFIG, "texte", Texte);
+
+  CURL *curl;
+  CURLcode res;
+
+  curl = curl_easy_init();
+  snprintf(Url, 60, "http://%s/action/set?subject=osd&stream=0", Ip);
+  curl_easy_setopt(curl, CURLOPT_URL, Url);
+  curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+  struct curl_slist *headers = NULL;
+  headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+  snprintf(Body, 500, " <request><osd>\
+	        <text>\
+          <active>%s</active>\
+          <xpos>%s</xpos>\
+          <ypos>%s</ypos>\
+          <font>%s</font>\
+          <transparent>128</transparent>\
+          <color>%s</color>\
+          <move>0</move>\
+          <content>%s</content>\
+          </text>\
+          </osd></request>", Actif, X_pos, Y_pos, Taille, Couleur, Texte);
+
+  char *body = Body;
+
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+
+  res = curl_easy_perform(curl);
+  if (res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    return 1;
+  }
+  /* Clean up after yourself */
+  curl_easy_cleanup(curl);
+  return 0;
+}
 /* ---------------------------------------------------------------------- */
 
 static int find_max_idx(const float *f)
@@ -1028,6 +1079,19 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 			i = process_block(s);
 			if (i != s->l1.dtmf.lastch && i >= 0){
 				DTMF=i;
+				if (On != 1)
+				{
+					gpioSetValue(Activation, high); // Commutation ON
+					GetConfigParam(PATH_PCONFIG, "osd", Actif);
+					if (strcmp (Actif, "1") == 0)
+					{
+						SetConfigParam(PATH_PCONFIG, "texte", "ON");
+						encoder_osd();
+					}
+					verbprintf(0,"Relais Actif\n");
+					On=1;
+				}
+				top_on=time(NULL); // Reset tempo Activation
 				verbprintf(0, "DTMF: %c\n", dtmf_transl[i]);
 				if ((DTMF == 12) || (DTMF == 3) || (DTMF == 11)) (OK = true);
 
@@ -1087,6 +1151,7 @@ void loop(void)
   Time=time(NULL);
   tempo_dtmf();
   tempo_TX();
+  tempo_activation();
   Ptt();
 }
 
@@ -1353,9 +1418,9 @@ void Commande(void)
       if (TX_145 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 145.9MHz SR250\n");
+        verbprintf(0,"RX 145.9MHz SR92\n");
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "92");
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
         RX_145=1;
@@ -1503,6 +1568,14 @@ void Commande(void)
       vocal();
     }
 
+/////////////////////////////////////// KILL ///////////////////////////////////////
+
+    if ((Buffer[1] == 12) && (Buffer[2] == 10) && (Buffer[3] == 10) && (Cod>0)) // Code *99
+    {
+      verbprintf(0,"Relais Inactif\n");
+      kill_ATV();
+    }
+
 /////////////////////////////////////// ARRET ///////////////////////////////////////
     if ((Buffer[1] == 3) && (Cod>0)) // Code A
     {
@@ -1514,6 +1587,27 @@ void Commande(void)
       verbprintf(0,"CONTROLE GENERAL\n");
       vocal();
     }
+}
+
+void kill_ATV(void)
+{
+  gpioSetValue(Activation, low);
+  On=0;
+  GetConfigParam(PATH_PCONFIG, "osd", Actif);
+  if (strcmp (Actif, "1") == 0)
+  {
+    SetConfigParam(PATH_PCONFIG, "texte", "OFF");
+    encoder_osd();
+  }
+}
+
+void tempo_activation(void)
+{
+  if ((On == 1) && (((unsigned long)difftime(Time, top_on)) > delai_Actif*60))
+  {
+    kill_ATV();
+    verbprintf(0,"Tempo de fin d'activation\n");
+  }
 }
 
 void tempo_TX(void)

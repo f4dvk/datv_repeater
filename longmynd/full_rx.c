@@ -342,7 +342,7 @@ int main() {
                 break;
                 case 16:
                   strcpy(FECtext, "FEC 8/9");
-                  MERThreshold = 00.7; //
+                  MERThreshold = 10.7; //
                 break;
                 case 17:
                   strcpy(FECtext, "FEC 9/10");
