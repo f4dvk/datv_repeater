@@ -108,6 +108,9 @@ time_t top_on;
 //////////////// TEMPO DTMF /////////////////
 time_t topD;
 
+//////////////// TIME LOG /////////////////
+char date[20];
+
 //////////////// TEMPO PTT /////////////////
 unsigned long delai_PTT=5;
 time_t topPTT;
@@ -191,6 +194,34 @@ void GetConfigParam(char *PathConfigFile, char *Param, char *Value)
     printf("Config file not found \n");
   }
   fclose(fp);
+}
+
+int Date(void)
+{
+  #define BUF_LEN 15
+  char buf[BUF_LEN] = {0};
+  time_t rawtime = time(NULL);
+
+  if (rawtime == -1) {
+
+    puts("The time() function failed");
+    return 1;
+  }
+
+  struct tm *ptm = localtime(&rawtime);
+
+  if (ptm == NULL) {
+
+    puts("The localtime() function failed");
+    return 1;
+  }
+
+  strftime(buf, BUF_LEN, "%d/%m/%Y", ptm);
+
+  snprintf(date, 120, "%s %02d:%02d:%02d", buf, ptm->tm_hour,
+         ptm->tm_min, ptm->tm_sec);
+
+  return 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -291,6 +322,11 @@ void initCOM(void)
 
   snprintf(commande, 150, "cat /dev/%s >/dev/null 2/dev/null &", USB);
   system(commande);
+
+  ////////////////////// OSD //////////////////////
+
+  SetConfigParam(PATH_PCONFIG, "texte", "OFF");
+  encoder_osd();
 
 }
 
@@ -1088,11 +1124,13 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 						SetConfigParam(PATH_PCONFIG, "texte", "ON");
 						encoder_osd();
 					}
-					verbprintf(0,"Relais Actif\n");
+					Date();
+					verbprintf(0,"%s Relais Actif\n", date);
 					On=1;
 				}
 				top_on=time(NULL); // Reset tempo Activation
-				verbprintf(0, "DTMF: %c\n", dtmf_transl[i]);
+				Date();
+				verbprintf(0, "%s DTMF: %c\n", date, dtmf_transl[i]);
 				if ((DTMF == 12) || (DTMF == 3) || (DTMF == 11)) (OK = true);
 
 				if (OK == true){
@@ -1168,7 +1206,8 @@ void Commande(void)
         if (TX != 1){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 145.9MHz SR125\n");
+          Date();
+          verbprintf(0,"%s TX 145.9MHz SR125\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
@@ -1201,7 +1240,8 @@ void Commande(void)
         if (TX != 2){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 145.9MHz SR92\n");
+          Date();
+          verbprintf(0,"%s TX 145.9MHz SR92\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS2");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "8PSK");
@@ -1234,7 +1274,8 @@ void Commande(void)
         if (TX != 3){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 437MHz SR125\n");
+          Date();
+          verbprintf(0,"%s TX 437MHz SR125\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
@@ -1267,7 +1308,8 @@ void Commande(void)
         if (TX != 4){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 437MHz SR250\n");
+          Date();
+          verbprintf(0,"%s TX 437MHz SR250\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
@@ -1300,7 +1342,8 @@ void Commande(void)
         if (TX != 5){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 437MHz SR500\n");
+          Date();
+          verbprintf(0,"%s TX 437MHz SR500\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
@@ -1333,7 +1376,8 @@ void Commande(void)
         if (TX != 6){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 1255MHz SR250\n");
+          Date();
+          verbprintf(0,"%s TX 1255MHz SR250\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "1255");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
@@ -1366,7 +1410,8 @@ void Commande(void)
         if (TX != 7){
           TX_LOW();
           usleep(800);
-          verbprintf(0,"TX 437MHz DVB-T 250\n");
+          Date();
+          verbprintf(0,"%s TX 437MHz DVB-T 250\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBT");
           SetConfigParam(PATH_PCONFIG_TX, "qam", "qpsk");
@@ -1378,15 +1423,9 @@ void Commande(void)
           band_select();
           TX=7;
           emission=1;
-          if (strcmp (Tx, "pluto") == 0)
-          {
-            encoder_video_dvbt();
-            encoder_start();
-          }
-          else
-          {
-            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
-          }
+          encoder_video_dvbt();
+          encoder_start_dvbt();
+          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -1401,7 +1440,8 @@ void Commande(void)
       if (TX_145 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 145.9MHz SR125\n");
+        Date();
+        verbprintf(0,"%s RX 145.9MHz SR125\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
@@ -1418,7 +1458,8 @@ void Commande(void)
       if (TX_145 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 145.9MHz SR92\n");
+        Date();
+        verbprintf(0,"%s RX 145.9MHz SR92\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "92");
         usleep(100);
@@ -1435,7 +1476,8 @@ void Commande(void)
       if (TX_437 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 437MHz SR125\n");
+        Date();
+        verbprintf(0,"%s RX 437MHz SR125\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
@@ -1452,7 +1494,8 @@ void Commande(void)
       if (TX_437 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 437MHz SR250\n");
+        Date();
+        verbprintf(0,"%s RX 437MHz SR250\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
@@ -1468,7 +1511,8 @@ void Commande(void)
       if (TX_1255 == 0){
         RX_LOW();
         usleep(500);
-        verbprintf(0,"RX 1255MHz SR250\n");
+        Date();
+        verbprintf(0,"%s RX 1255MHz SR250\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "1255000");
         SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
         usleep(100);
@@ -1489,7 +1533,8 @@ void Commande(void)
         system(COM_USB);
         snprintf(COM_USB, 40, "echo 'OUTB_1'>/dev/%s", USB);
         system(COM_USB);
-        verbprintf(0,"RX 437MHz TNT\n");
+        Date();
+        verbprintf(0,"%s RX 437MHz TNT\n", date);
         RX_437=1;
         //band_select();
         RX=6;
@@ -1503,7 +1548,8 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
-      verbprintf(0,"MIRE\n");
+      Date();
+      verbprintf(0,"%s MIRE\n", date);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "MIRE");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=7;
@@ -1513,9 +1559,10 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
+      Date();
+      verbprintf(0,"%s MULTI-VIDEOS\n", date);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
-      verbprintf(0,"MULTI-VIDEOS\n");
       RX=8;
       vocal();
     }
@@ -1523,13 +1570,14 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
+      Date();
+      verbprintf(0,"%s RESERVE\n", date);
       snprintf(COM_USB, 40, "echo 'OUTA_2'>/dev/%s", USB);
       system(COM_USB);
       snprintf(COM_USB, 40, "echo 'OUTB_2'>/dev/%s", USB);
       system(COM_USB);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
-      verbprintf(0,"RESERVE\n");
       RX=9;
       vocal();
     }
@@ -1537,13 +1585,14 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
+      Date();
+      verbprintf(0,"%s RESERVE\n", date);
       snprintf(COM_USB, 40, "echo 'OUTA_3'>/dev/%s", USB);
       system(COM_USB);
       snprintf(COM_USB, 40, "echo 'OUTB_3'>/dev/%s", USB);
       system(COM_USB);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
-      verbprintf(0,"RESERVE\n");
       RX=10;
       vocal();
     }
@@ -1551,9 +1600,10 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
+      Date();
+      verbprintf(0,"%s CAMERA\n", date);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "CAMERA");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
-      verbprintf(0,"CAMERA\n");
       RX=11;
       vocal();
     }
@@ -1561,7 +1611,8 @@ void Commande(void)
     {
       RX_LOW();
       usleep(500);
-      verbprintf(0,"FILM\n");
+      Date();
+      verbprintf(0,"%s FILM\n", date);
       SetConfigParam(PATH_PCONFIG_SRC, "source", "FILM");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=12;
@@ -1572,19 +1623,22 @@ void Commande(void)
 
     if ((Buffer[1] == 12) && (Buffer[2] == 10) && (Buffer[3] == 10) && (Cod>0)) // Code *99
     {
-      verbprintf(0,"Relais Inactif\n");
+      Date();
+      verbprintf(0,"%s Relais Inactif\n", date);
       kill_ATV();
     }
 
 /////////////////////////////////////// ARRET ///////////////////////////////////////
     if ((Buffer[1] == 3) && (Cod>0)) // Code A
     {
-      verbprintf(0,"ARRET TX\n");
+      Date();
+      verbprintf(0,"%s ARRET TX\n", date);
       TX_LOW();
     }
     if ((Buffer[1] == 11) && (Cod>0)) // Code C
     {
-      verbprintf(0,"CONTROLE GENERAL\n");
+      Date();
+      verbprintf(0,"%s CONTROLE GENERAL\n", date);
       vocal();
     }
 }
@@ -1606,7 +1660,8 @@ void tempo_activation(void)
   if ((On == 1) && (((unsigned long)difftime(Time, top_on)) > delai_Actif*60))
   {
     kill_ATV();
-    verbprintf(0,"Tempo de fin d'activation\n");
+    Date();
+    verbprintf(0,"%s Tempo de fin d'activation\n", date);
   }
 }
 
@@ -1614,7 +1669,8 @@ void tempo_TX(void)
 {
   if ((emission == 1) && (((unsigned long)difftime(Time, top)) > delai_TX*60))
   {
-    verbprintf(0,"Tempo de fin TX\n");
+    Date();
+    verbprintf(0,"%s Tempo de fin TX\n", date);
     TX_LOW();
     RX_LOW();
     //usleep(500);

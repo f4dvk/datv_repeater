@@ -73,6 +73,8 @@ elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVBT" ]; then
   let FECNUM=FEC
   let FECDEN=FEC+1
 
+  let SYMBOLRATE_DVBT=SYMBOLRATE*1000
+
   # awk affiche en exposant si la fréquence est supérieure à 2147 MHz
   FREQ_OUTPUTHZ=`echo - | awk '{print '$FREQ' * 100000}'`
   FREQ_OUTPUTHZ="$FREQ_OUTPUTHZ"0
@@ -81,7 +83,7 @@ elif [ "$Tx" == "pluto" ] && [ "$MODE" == "DVBT" ]; then
   Gain_Pluto=`echo - | awk '{print ('$GAIN' / 100)* 71+-71}' | awk '{printf("%.0f", $0);}'`
 
   /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack -m $QAM -f $FREQ_OUTPUTHZ -a $Gain_Pluto -r pluto \
-    -g 1/"$GUARD" -b $SYMBOLRATE -p 1314 -e "$FECNUM"/"$FECDEN" -n $PLUTOIP -i /dev/null &
+    -g 1/"$GUARD" -b $SYMBOLRATE_DVBT -p 1314 -e "$FECNUM"/"$FECDEN" -n $PLUTOIP -i /dev/null &
 
 fi
 
