@@ -28,6 +28,9 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   sudo apt-get -y install libusb-1.0-0-dev # longmynd
   sudo apt-get install libcurl4-openssl-dev # Command encodeur H.264 / H.265
 
+  # Synthese vocale
+  sudo apt-get -y install libttspico-utils
+
   sudo apt-get -y install libxml2 libxml2-dev bison flex libcdk5-dev                   # libiio
   sudo apt-get -y install libaio-dev libserialport-dev libavahi-client-dev             # libiio
 

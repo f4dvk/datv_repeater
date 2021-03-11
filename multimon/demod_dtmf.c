@@ -1177,6 +1177,7 @@ void loop(void)
 {
   if (load == 0)
   {
+    system("killall pqiv >/dev/null 2>/dev/null");
     system("pqiv --fullscreen --hide-info-box /home/$USER/datv_repeater/media/image.gif &");
     initGPIO();
     initCOM();
@@ -1779,92 +1780,135 @@ void vocal(void) {
 
   if (TX == 1)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/01.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 145.9 méga-hertz, D V B S, SR 125'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/01.wav");
   }
 
   if (TX == 2)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/02.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 145.9 méga-hertz, D V B S2, SR 92'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/02.wav");
   }
 
   if (TX == 3)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/03.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 125'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/03.wav");
   }
 
   if (TX == 4)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/04.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 250'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/04.wav");
   }
 
   if (TX == 5)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/05.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 500'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/05.wav");
   }
 
   if (TX == 6)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/06.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 1255 méga-hertz, D V B S, SR 250'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/06.wav");
+  }
+
+  if (TX == 7)
+  {
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B T 250'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/07.wav");
   }
 
   if (RX == 1)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/10.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, SR 125'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/10.wav");
   }
 
   if (RX == 2)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/11.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, SR 92'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/11.wav");
   }
 
   if (RX == 3)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/12.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, SR 125'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/12.wav");
   }
 
   if (RX == 4)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/13.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, SR 250'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/13.wav");
   }
 
   if (RX == 5)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/14.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 1255 méga-hertz, SR 250'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/14.wav");
   }
 
   if (RX == 6)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/15.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, D V B T'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/15.wav");
   }
 
   if (RX == 7)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/16.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Mire'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/16.wav");
   }
 
   if (RX == 8)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/17.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Multi-vidéos'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/17.wav");
   }
 
   if (RX == 9)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/18.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Réserve'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/18.wav");
   }
 
   if (RX == 10)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/19.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Réserve'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/19.wav");
   }
 
   if (RX == 11)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/20.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Caméra'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/20.wav");
   }
 
   if (RX == 12)
   {
-    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/21.wav");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Film'");
+    system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+    //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/21.wav");
   }
 
   usleep(200);
@@ -1876,7 +1920,9 @@ void erreur(void) {
   usleep(500);
   gpioSetValue(ptt_vocal, high);
   usleep(300);
-  system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
+  system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Erreur, fréquences RX et TX identiques'");
+	system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+  //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
   usleep(200);
   gpioSetValue(ptt_vocal, low);
 }
