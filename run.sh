@@ -2,7 +2,7 @@
 
 Nb=0
 
-wile true;do
+while true;do
   multimon
   sleep 1
   let Nb=Nb+1
