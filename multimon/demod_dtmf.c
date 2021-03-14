@@ -96,6 +96,9 @@ char new_bitrate[10];
 //////////////////// OSD ///////////////////
 char Actif[2];
 
+//////////////// VARIABLES /////////////////
+char Mode[10];
+
 ///////////////// TEMPO TX /////////////////
 unsigned long delai_TX=6;
 time_t top;                        // variabe de calcul temps TX
@@ -412,9 +415,9 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   if (new_bitrate_v < 250)
   {
     //AUDIOCHANNELS=1;
-    VIDEO_WIDTH=576;
-    VIDEO_HEIGHT=324;
-    Fps=15;
+    VIDEO_WIDTH=640;
+    VIDEO_HEIGHT=360;
+    Fps=20;
     snprintf(calcul, 150, "echo '(%d/1000)*75/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
 
@@ -428,10 +431,10 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   if (new_bitrate_v < 200)
   {
     //AUDIOCHANNELS=1;
-    VIDEO_WIDTH=384;
-    VIDEO_HEIGHT=216;
-    Fps=15;
-    snprintf(calcul, 150, "echo '(%d/1000)*65/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
+    VIDEO_WIDTH=640;
+    VIDEO_HEIGHT=360;
+    Fps=20;
+    snprintf(calcul, 150, "echo '(%d/1000)*65/100-25-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
 
     while (fgets(new_bitrate, 10, value) != NULL)
@@ -446,7 +449,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
     //AUDIOCHANNELS=1;
     VIDEO_WIDTH=384;
     VIDEO_HEIGHT=216;
-    Fps=10;
+    Fps=15;
     strcpy(new_bitrate, "64");
   }
 
@@ -584,7 +587,6 @@ int encoder_start()
   char PlutoIp[20];
   char Call[10];
   char Freq[10];
-  char Mode[10];
   char Constellation[10];
   char Sr[10];
   char Fec[10];
@@ -676,7 +678,6 @@ int encoder_stop()
   char PlutoIp[20];
   char Call[10];
   char Freq[10];
-  char Mode[10];
   char Constellation[10];
   char Sr[10];
   char Fec[10];
@@ -750,7 +751,6 @@ int encoder_video()
 {
   char command[150];
   char Ip[20];
-  char Mode[10];
   char Constellation[10];
   char Sr[10];
   char Fec[10];
@@ -1247,7 +1247,7 @@ void Commande(void)
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS2");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "8PSK");
           SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "92");
-          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "34");
           usleep(100);
           TX_145=1;
           band_select();
@@ -1721,12 +1721,20 @@ void Ptt(void)
 void TX_LOW(void)
 {
   GetConfigParam(PATH_PCONFIG,"tx", Tx);
+  GetConfigParam(PATH_PCONFIG_TX,"mode", Mode);
 
   if (strcmp (Tx, "pluto") == 0)
   {
-    encoder_stop();
-    encoder_stop_dvbt();
-    system("sudo killall dvb_t_stack >/dev/null 2>/dev/null");
+    if (strcmp (Mode, "DVBT") == 0)
+    {
+      encoder_stop_dvbt();
+      system("sudo killall dvb_t_stack >/dev/null 2>/dev/null");
+    }
+    else
+    {
+      encoder_stop();
+      system("/home/$USER/datv_repeater/dvbtx/scripts/pluto_stop.sh >/dev/null 2>/dev/null");
+    }
   }
   else // Limesdr via raspberry
   {
