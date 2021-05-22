@@ -53,14 +53,14 @@
 #define PHINC(x) ((x)*0x10000/SAMPLE_RATE)
 
 /////////////////// GPIO /////////////////// MAX 22
-enum jetsonGPIONumber ptt_vocal = gpio78;
-enum jetsonGPIONumber band_bit0 = gpio16;
-enum jetsonGPIONumber band_bit1 = gpio17;
+enum jetsonGPIONumber ptt_vocal = gpio78;  // Pin 40
+enum jetsonGPIONumber band_bit0 = gpio16;  // Pin 19
+enum jetsonGPIONumber band_bit1 = gpio17;  // Pin 21
 enum jetsonGPIONumber Activation = gpio18; // Pin 23
-enum jetsonGPIONumber ptt_145 = gpio13;
-enum jetsonGPIONumber ptt_437 = gpio19;
-enum jetsonGPIONumber ptt_1255 = gpio20;
-enum jetsonGPIONumber rx_tnt = gpio77;
+enum jetsonGPIONumber sarsat = gpio13;     // Pin 22
+enum jetsonGPIONumber ptt_437 = gpio19;    // Pin 24
+enum jetsonGPIONumber ptt_1255 = gpio20;   // Pin 26
+enum jetsonGPIONumber rx_tnt = gpio77;     // Pin 38
 int load=0;
 
 /////////////////// DTMF ///////////////////
@@ -82,6 +82,7 @@ char path1[630];
 char path2[630];
 char path3[630];
 char path4[630];
+char path5[630];
 
 char Tx[10];
 FILE *dvb;
@@ -240,7 +241,7 @@ void unexportGPIO(void)
   gpioUnexport(band_bit0);
   gpioUnexport(band_bit1);
   gpioUnexport(Activation);
-  gpioUnexport(ptt_145);
+  gpioUnexport(sarsat);
   gpioUnexport(ptt_437);
   gpioUnexport(ptt_1255);
   gpioUnexport(rx_tnt);
@@ -252,7 +253,7 @@ void exportGPIO(void)
   gpioExport(band_bit0);
   gpioExport(band_bit1);
   gpioExport(Activation);
-  gpioExport(ptt_145);
+  gpioExport(sarsat);
   gpioExport(ptt_437);
   gpioExport(ptt_1255);
   gpioExport(rx_tnt);
@@ -275,12 +276,15 @@ void initGPIO(void)
   snprintf(path4, 630, "/home/%s/datv_repeater/config.txt", user);
   #define PATH_PCONFIG path4
 
+  snprintf(path5, 630, "/home/%s/406/config.txt", user);
+  #define PATH_PCONFIG_406 path5
+
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
   gpioSetDirection(band_bit0, outputPin);
   gpioSetDirection(band_bit1, outputPin);
   gpioSetDirection(Activation, outputPin);
-  gpioSetDirection(ptt_145, outputPin);
+  gpioSetDirection(sarsat, outputPin);
   gpioSetDirection(ptt_437, outputPin);
   gpioSetDirection(ptt_1255, outputPin);
   gpioSetDirection(rx_tnt, outputPin);
@@ -289,7 +293,7 @@ void initGPIO(void)
   gpioSetValue(band_bit0, low);
   gpioSetValue(band_bit1, low);
   gpioSetValue(Activation, low);
-  gpioSetValue(ptt_145, low);
+  gpioSetValue(sarsat, low);
   gpioSetValue(ptt_437, low);
   gpioSetValue(ptt_1255, low);
   gpioSetValue(rx_tnt, low);
@@ -335,6 +339,8 @@ void initCOM(void)
 
 void initRX(void)
 {
+  TX_LOW();
+  RX_LOW();
   usleep(500);
   SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
   system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
@@ -434,7 +440,7 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
     VIDEO_WIDTH=640;
     VIDEO_HEIGHT=360;
     Fps=20;
-    snprintf(calcul, 150, "echo '(%d/1000)*65/100-25-%d/1000' | bc", bitrate_ts, Audio_b);
+    snprintf(calcul, 150, "echo '(%d/1000)*65/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
 
     while (fgets(new_bitrate, 10, value) != NULL)
@@ -821,7 +827,7 @@ int encoder_video()
           <codec>%s</codec>\
           <resolution>%s</resolution>\
           <framerate>%d</framerate>\
-          <audioenc>1</audioenc>\
+          <audioen>1</audioen>\
           <rc>1</rc>\
           <keygop>100</keygop>\
           <bitrate>%d</bitrate>\
@@ -954,7 +960,7 @@ int encoder_video_dvbt()
           <codec>%s</codec>\
           <resolution>%s</resolution>\
           <framerate>%d</framerate>\
-          <audioenc>1</audioenc>\
+          <audioen>1</audioen>\
           <rc>1</rc>\
           <keygop>100</keygop>\
           <bitrate>%d</bitrate>\
@@ -985,7 +991,7 @@ int encoder_osd()
   char Texte[20];
 
   char Url[60];
-  char Body[500];
+  char Body[800];
 
   GetConfigParam(PATH_PCONFIG, "encoderip", Ip);
   GetConfigParam(PATH_PCONFIG, "osd", Actif);
@@ -1007,8 +1013,18 @@ int encoder_osd()
   headers = curl_slist_append(headers, "authorization: Basic YWRtaW46MTIzNDU=");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-  snprintf(Body, 500, " <request><osd>\
-	        <text>\
+  snprintf(Body, 800, " <request><osd>\
+        <datetime>\
+          <active>0</active>\
+          <xpos>10</xpos>\
+          <ypos>60</ypos>\
+          <font>64</font>\
+          <transparent>128</transparent>\
+          <color>#FF0000</color>\
+          <datefmt>0</datefmt>\
+          <hourfmt>0</hourfmt>\
+        </datetime>\
+        <text>\
           <active>%s</active>\
           <xpos>%s</xpos>\
           <ypos>%s</ypos>\
@@ -1017,8 +1033,8 @@ int encoder_osd()
           <color>%s</color>\
           <move>0</move>\
           <content>%s</content>\
-          </text>\
-          </osd></request>", Actif, X_pos, Y_pos, Taille, Couleur, Texte);
+        </text>\
+      </osd></request>", Actif, X_pos, Y_pos, Taille, Couleur, Texte);
 
   char *body = Body;
 
@@ -1166,7 +1182,7 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 void tempo_dtmf(void)
 {
 
-  if ((Cod < 3) && (OK == true) && (((unsigned long)difftime(Time, topD)) > 4)) {
+  if ((Cod < 3) && (OK == true) && (((unsigned long)difftime(Time, topD)) >= 4)) {
     verbprintf(0,"Hors temporisation\n");
     Cod=0;
     OK=false;
@@ -1181,8 +1197,6 @@ void loop(void)
     system("pqiv --fullscreen --hide-info-box /home/$USER/datv_repeater/media/image.gif &");
     initGPIO();
     initCOM();
-    TX_LOW();
-    RX_LOW();
     initRX();
     load=1;
   }
@@ -1203,19 +1217,19 @@ void Commande(void)
   //////////////////////////////////////// TX ////////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 0) && (Cod>0)) // Code *01
     {
-      if (RX_145 == 0){
+      if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 1){
           TX_LOW();
           usleep(800);
           Date();
-          verbprintf(0,"%s TX 145.9MHz SR125\n", date);
-          SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
+          verbprintf(0,"%s TX 437MHz SR250 DVB-S\n", date);
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
-          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
-          SetConfigParam(PATH_PCONFIG_TX, "fec", "7");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
           usleep(100);
-          TX_145=1;
+          TX_437=1;
           band_select();
           TX=1;
           emission=1;
@@ -1237,19 +1251,19 @@ void Commande(void)
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 1) && (Cod>0)) // Code *02
     {
-      if (RX_145 == 0){
+      if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 2){
           TX_LOW();
           usleep(800);
           Date();
-          verbprintf(0,"%s TX 145.9MHz SR92\n", date);
-          SetConfigParam(PATH_PCONFIG_TX, "freq", "145.9");
+          verbprintf(0,"%s TX 437MHz SR250 DVB-S2 8PSK\n", date);
+          SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
           SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS2");
           SetConfigParam(PATH_PCONFIG_TX, "constellation", "8PSK");
-          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "92");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
           SetConfigParam(PATH_PCONFIG_TX, "fec", "34");
           usleep(100);
-          TX_145=1;
+          TX_437=1;
           band_select();
           TX=2;
           emission=1;
@@ -1271,31 +1285,26 @@ void Commande(void)
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 2) && (Cod>0)) // Code *03
     {
-      if (RX_437 == 0){
+      if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 3){
           TX_LOW();
           usleep(800);
           Date();
-          verbprintf(0,"%s TX 437MHz SR125\n", date);
+          verbprintf(0,"%s TX 437MHz DVB-T 250\n", date);
           SetConfigParam(PATH_PCONFIG_TX, "freq", "437");
-          SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBS");
-          SetConfigParam(PATH_PCONFIG_TX, "constellation", "QPSK");
-          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "125");
-          SetConfigParam(PATH_PCONFIG_TX, "fec", "7");
+          SetConfigParam(PATH_PCONFIG_TX, "mode", "DVBT");
+          SetConfigParam(PATH_PCONFIG_TX, "qam", "qpsk");
+          SetConfigParam(PATH_PCONFIG_TX, "symbolrate", "250");
+          SetConfigParam(PATH_PCONFIG_TX, "fec", "3");
+          SetConfigParam(PATH_PCONFIG_TX, "guard", "32");
           usleep(100);
           TX_437=1;
           band_select();
-          TX=3;
+          TX=7;
           emission=1;
-          if (strcmp (Tx, "pluto") == 0)
-          {
-            encoder_video();
-            encoder_start();
-          }
-          else // Limesdr via raspberry
-          {
-            system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
-          }
+          encoder_video_dvbt();
+          encoder_start_dvbt();
+          system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
           vocal();
@@ -1303,7 +1312,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 4) && (Cod>0)) // Code *04
+    /*if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 4) && (Cod>0)) // Code *04
     {
       if (RX_437 == 0){
         if (TX != 4){
@@ -1433,7 +1442,7 @@ void Commande(void)
         }
       }
       else erreur();
-    }
+    } */
 
 //////////////////////////////////////// RX ////////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 13) && (Cod>0)) // Code *10
@@ -1442,9 +1451,9 @@ void Commande(void)
         RX_LOW();
         usleep(500);
         Date();
-        verbprintf(0,"%s RX 145.9MHz SR125\n", date);
+        verbprintf(0,"%s RX 145.9MHz SR92\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "92");
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
         RX_145=1;
@@ -1460,9 +1469,9 @@ void Commande(void)
         RX_LOW();
         usleep(500);
         Date();
-        verbprintf(0,"%s RX 145.9MHz SR92\n", date);
+        verbprintf(0,"%s RX 145.9MHz SR125\n", date);
         SetConfigParam(PATH_PCONFIG_RX, "freq", "145900");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "92");
+        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
         usleep(100);
         system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
         RX_145=1;
@@ -1474,60 +1483,7 @@ void Commande(void)
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) // Code *12
     {
-      if (TX_437 == 0){
-        RX_LOW();
-        usleep(500);
-        Date();
-        verbprintf(0,"%s RX 437MHz SR125\n", date);
-        SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "125");
-        usleep(100);
-        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
-        RX_437=1;
-        band_select();
-        RX=3;
-        vocal();
-      }
-      else erreur();
-    }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 2) && (Cod>0)) // Code *13
-    {
-      if (TX_437 == 0){
-        RX_LOW();
-        usleep(500);
-        Date();
-        verbprintf(0,"%s RX 437MHz SR250\n", date);
-        SetConfigParam(PATH_PCONFIG_RX, "freq", "437000");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
-        usleep(100);
-        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
-        RX_437=1;
-        band_select();
-        RX=4;
-        vocal();
-      }
-    }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 4) && (Cod>0)) // Code *14
-    {
-      if (TX_1255 == 0){
-        RX_LOW();
-        usleep(500);
-        Date();
-        verbprintf(0,"%s RX 1255MHz SR250\n", date);
-        SetConfigParam(PATH_PCONFIG_RX, "freq", "1255000");
-        SetConfigParam(PATH_PCONFIG_RX, "symbolrate", "250");
-        usleep(100);
-        system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/datv_repeater/longmynd/full_rx &'");
-        RX_1255=1;
-        band_select();
-        RX=5;
-        vocal();
-      }
-      else erreur();
-    }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 5) && (Cod>0)) // Code *15
-    {
-      if (TX_437 == 0){
+      if (TX_145 == 0){
         RX_LOW();
         usleep(500);
         snprintf(COM_USB, 40, "echo 'OUTA_1'>/dev/%s", USB);
@@ -1535,17 +1491,50 @@ void Commande(void)
         snprintf(COM_USB, 40, "echo 'OUTB_1'>/dev/%s", USB);
         system(COM_USB);
         Date();
-        verbprintf(0,"%s RX 437MHz TNT\n", date);
-        RX_437=1;
+        verbprintf(0,"%s RX 145.9MHz DVB-T\n", date);
+        RX_145=1;
         //band_select();
-        RX=6;
+        RX=3;
         //gpioSetValue(ant_437, low);
-        gpioSetValue(rx_tnt, high);
+        //gpioSetValue(rx_tnt, high);
         vocal();
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) // Code *16
+    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 2) && (Cod>0)) // Code *13
+    {
+      RX_LOW();
+      usleep(500);
+      Date();
+      verbprintf(0,"%s MULTI-VIDEOS\n", date);
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
+      system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
+      RX=4;
+      vocal();
+    }
+    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 4) && (Cod>0)) // Code *14
+    {
+      RX_LOW();
+      usleep(500);
+      Date();
+      verbprintf(0,"%s CAMERA\n", date);
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "CAMERA");
+      system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
+      RX=5;
+      vocal();
+    }
+    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 5) && (Cod>0)) // Code *15
+    {
+      RX_LOW();
+      usleep(500);
+      Date();
+      verbprintf(0,"%s FILM\n", date);
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "FILM");
+      system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
+      RX=6;
+      vocal();
+    }
+   /* if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) // Code *16
     {
       RX_LOW();
       usleep(500);
@@ -1618,6 +1607,36 @@ void Commande(void)
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=12;
       vocal();
+    } */
+
+/////////////////////////////////////// 406 ///////////////////////////////////////
+    if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 13) && (Cod>0)) // Code *40
+    {
+      TX_LOW();
+      RX_LOW();
+      usleep(500);
+      Date();
+      verbprintf(0,"%s Décodeur SARSAT 406.028M\n", date);
+      SetConfigParam(PATH_PCONFIG_406, "low", "406.028M");
+      SetConfigParam(PATH_PCONFIG_406, "high", "406.028M");
+      gpioSetValue(sarsat, high);
+      system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
+      RX=40;
+      vocal();
+    }
+    if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 2) && (Cod>0)) // Code *43
+    {
+      TX_LOW();
+      RX_LOW();
+      usleep(500);
+      Date();
+      verbprintf(0,"%s Décodeur SARSAT 433.95M\n", date);
+      SetConfigParam(PATH_PCONFIG_406, "low", "433.95M");
+      SetConfigParam(PATH_PCONFIG_406, "high", "433.95M");
+      gpioSetValue(sarsat, high);
+      system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
+      RX=43;
+      vocal();
     }
 
 /////////////////////////////////////// KILL ///////////////////////////////////////
@@ -1658,17 +1677,18 @@ void kill_ATV(void)
 
 void tempo_activation(void)
 {
-  if ((On == 1) && (((unsigned long)difftime(Time, top_on)) > delai_Actif*60))
+  if ((On == 1) && (((unsigned long)difftime(Time, top_on)) >= delai_Actif*60))
   {
     kill_ATV();
     Date();
     verbprintf(0,"%s Tempo de fin d'activation\n", date);
+    if ((RX == 40) || (RX == 43)) initRX();
   }
 }
 
 void tempo_TX(void)
 {
-  if ((emission == 1) && (((unsigned long)difftime(Time, top)) > delai_TX*60))
+  if ((emission == 1) && (((unsigned long)difftime(Time, top)) >= delai_TX*60))
   {
     Date();
     verbprintf(0,"%s Tempo de fin TX\n", date);
@@ -1706,11 +1726,9 @@ void band_select(void)
 
 void Ptt(void)
 {
-  if ((TX != 0) && (TX_On == 0) && (((unsigned long)difftime(Time, topPTT)) > delai_PTT))
+  if ((TX != 0) && (TX_On == 0) && (((unsigned long)difftime(Time, topPTT)) >= delai_PTT))
   {
-    if (TX_145 == 1)
-      gpioSetValue(ptt_145, high);
-    else if (TX_437 == 1)
+    if (TX_437 == 1)
       gpioSetValue(ptt_437, high);
     else if (TX_1255 == 1)
       gpioSetValue(ptt_1255, high);
@@ -1745,7 +1763,7 @@ void TX_LOW(void)
   //digitalWrite (PTT_UHF, HIGH);
   //digitalWrite (PTT_VHF, HIGH);
   //digitalWrite (PTT_1255, HIGH);
-  gpioSetValue(ptt_145, low);
+  //gpioSetValue(ptt_145, low);
   gpioSetValue(ptt_437, low);
   gpioSetValue(ptt_1255, low);
   emission=0;
@@ -1766,13 +1784,11 @@ void RX_LOW(void)
   system("killall mpv >/dev/null 2>/dev/null");
   system("killall gst-launch-1.0 >/dev/null 2>/dev/null");
   system("sudo killall vlc >/dev/null 2>/dev/null");
-  //digitalWrite (MIRE, HIGH);
-  //digitalWrite (all_videos, HIGH);
-  //digitalWrite (VIDEO, HIGH);
-  //digitalWrite (VIDEO_DATV, HIGH);
-  //digitalWrite (RX_1255_FM, HIGH);
-  //digitalWrite (RX_438_AM, HIGH);
-  //digitalWrite (CAMERA, HIGH);
+  system("sudo killall perl >/dev/null 2>/dev/null");
+  system("sudo killall rtl_sdr >/dev/null 2>/dev/null");
+  system("sudo killall sox >/dev/null 2>/dev/null");
+  system("sudo killall dec406_V6 >/dev/null 2>/dev/null");
+  gpioSetValue(sarsat, low);
   gpioSetValue(rx_tnt, low);
   RX_145=0;
   RX_437=0;
@@ -1782,32 +1798,34 @@ void RX_LOW(void)
 
 void vocal(void) {
 
+  sleep(0.5);
+
   gpioSetValue(ptt_vocal, high);
 
-  usleep(400);
+  sleep(1);
 
   if (TX == 1)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 145.9 méga-hertz, D V B S, SR 125'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/01.wav");
   }
 
   if (TX == 2)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 145.9 méga-hertz, D V B S2, SR 92'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S2, SR 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/02.wav");
   }
 
   if (TX == 3)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 125'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B T, 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/03.wav");
   }
 
-  if (TX == 4)
+  /* if (TX == 4)
   {
     system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B S, SR 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
@@ -1833,51 +1851,51 @@ void vocal(void) {
     system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'TX 437 méga-hertz, D V B T 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/07.wav");
-  }
+  } */
 
   if (RX == 1)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, SR 125'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, D V B S, SR 92'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/10.wav");
   }
 
   if (RX == 2)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, SR 92'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, D V B S, SR 125'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/11.wav");
   }
 
   if (RX == 3)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, SR 125'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 145.9 méga-hertz, D V B T, 250'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/12.wav");
   }
 
   if (RX == 4)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, SR 250'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Multi-vidéos'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/13.wav");
   }
 
   if (RX == 5)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 1255 méga-hertz, SR 250'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Caméra'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/14.wav");
   }
 
   if (RX == 6)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX 437 méga-hertz, D V B T'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Film'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/15.wav");
   }
 
-  if (RX == 7)
+  /*if (RX == 7)
   {
     system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Mire'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
@@ -1917,21 +1935,21 @@ void vocal(void) {
     system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Film'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/21.wav");
-  }
+  } */
 
-  usleep(200);
+  sleep(0.2);
 
   gpioSetValue(ptt_vocal, low);
 }
 
 void erreur(void) {
-  usleep(500);
+  sleep(0.5);
   gpioSetValue(ptt_vocal, high);
-  usleep(300);
+  sleep(1);
   system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Erreur, fréquences RX et TX identiques'");
 	system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
   //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
-  usleep(200);
+  sleep(0.2);
   gpioSetValue(ptt_vocal, low);
 }
 
