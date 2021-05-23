@@ -156,6 +156,13 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   #sudo cp datvexpressraw16.rbf /lib/firmware/datvexpress/datvexpressraw16.rbf
   cd /home/$USER
 
+  echo
+  echo "-----------------------------------------------------"
+  echo "---------- Installation du décodeur SARSAT ----------"
+  echo "-----------------------------------------------------"
+
+  /home/$USER/datv_repeater/406/install.sh
+
 fi
 
 if grep -q "Raspberry" /proc/device-tree/model; then
