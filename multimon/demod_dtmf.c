@@ -1622,7 +1622,6 @@ void Commande(void)
       gpioSetValue(sarsat, high);
       system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
       RX=40;
-      vocal();
     }
     if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 2) && (Cod>0)) // Code *43
     {
@@ -1636,7 +1635,6 @@ void Commande(void)
       gpioSetValue(sarsat, high);
       system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
       RX=43;
-      vocal();
     }
 
 /////////////////////////////////////// KILL ///////////////////////////////////////
@@ -1798,11 +1796,11 @@ void RX_LOW(void)
 
 void vocal(void) {
 
-  sleep(0.5);
+  usleep(600000);
 
   gpioSetValue(ptt_vocal, high);
 
-  sleep(1);
+  usleep(600000);
 
   if (TX == 1)
   {
@@ -1937,19 +1935,19 @@ void vocal(void) {
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/21.wav");
   } */
 
-  sleep(0.2);
+  usleep(200000);
 
   gpioSetValue(ptt_vocal, low);
 }
 
 void erreur(void) {
-  sleep(0.5);
+  usleep(600000);
   gpioSetValue(ptt_vocal, high);
-  sleep(1);
+  usleep(600000);
   system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Erreur, fréquences RX et TX identiques'");
 	system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
   //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
-  sleep(0.2);
+  usleep(200000);
   gpioSetValue(ptt_vocal, low);
 }
 
