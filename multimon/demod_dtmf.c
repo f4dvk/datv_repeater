@@ -53,13 +53,13 @@
 #define PHINC(x) ((x)*0x10000/SAMPLE_RATE)
 
 /////////////////// GPIO /////////////////// MAX 22
-enum jetsonGPIONumber ptt_vocal = gpio78;  // Pin 40
+enum jetsonGPIONumber ptt_vocal = gpio20;  // Pin 26
 enum jetsonGPIONumber band_bit0 = gpio16;  // Pin 19
 enum jetsonGPIONumber band_bit1 = gpio17;  // Pin 21
 enum jetsonGPIONumber Activation = gpio18; // Pin 23
 enum jetsonGPIONumber sarsat = gpio13;     // Pin 22
 enum jetsonGPIONumber ptt_437 = gpio19;    // Pin 24
-enum jetsonGPIONumber ptt_1255 = gpio20;   // Pin 26
+enum jetsonGPIONumber ptt_1255 = gpio78;   // Pin 40
 enum jetsonGPIONumber rx_tnt = gpio77;     // Pin 38
 int load=0;
 
@@ -345,7 +345,7 @@ void initRX(void)
   SetConfigParam(PATH_PCONFIG_SRC, "source", "MULTI");
   system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
   verbprintf(0,"MULTI-VIDEOS\n");
-  RX=8;
+  RX=4;
 }
 
 void GetIPAddr(char IPAddress[20])
@@ -372,8 +372,8 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
 
   int Audio_b=32000;
   //int AUDIOCHANNELS=2;
-  int VIDEO_WIDTH=1920;
-  int VIDEO_HEIGHT=1080;
+  int VIDEO_WIDTH=1280;
+  int VIDEO_HEIGHT=720;
 
   snprintf(calcul, 150, "echo '(%d/1000)*85/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
   FILE *value=popen (calcul, "r");
@@ -406,8 +406,8 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   {
     //AUDIOCHANNELS=2;
     Fps=25;
-    VIDEO_WIDTH=768;
-    VIDEO_HEIGHT=432;
+    VIDEO_WIDTH=720;
+    VIDEO_HEIGHT=480;
     snprintf(calcul, 150, "echo '(%d/1000)*75/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
 
@@ -421,8 +421,8 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   if (new_bitrate_v < 250)
   {
     //AUDIOCHANNELS=1;
-    VIDEO_WIDTH=640;
-    VIDEO_HEIGHT=360;
+    VIDEO_WIDTH=720;
+    VIDEO_HEIGHT=480;
     Fps=20;
     snprintf(calcul, 150, "echo '(%d/1000)*75/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
@@ -437,8 +437,8 @@ void strategy(int bitrate_ts) // Calcul firmware Pluto de F5OEO
   if (new_bitrate_v < 200)
   {
     //AUDIOCHANNELS=1;
-    VIDEO_WIDTH=640;
-    VIDEO_HEIGHT=360;
+    VIDEO_WIDTH=720;
+    VIDEO_HEIGHT=480;
     Fps=20;
     snprintf(calcul, 150, "echo '(%d/1000)*65/100-10-%d/1000' | bc", bitrate_ts, Audio_b);
     FILE *value=popen (calcul, "r");
@@ -924,14 +924,14 @@ int encoder_video_dvbt()
 
   if (Bitrate_Video > 190)
   {
-    VIDEO_WIDTH=704;
-    VIDEO_HEIGHT=576;
+    VIDEO_WIDTH=720;
+    VIDEO_HEIGHT=480;
     Fps=25;
   }
   else
   {
-    VIDEO_WIDTH=352;
-    VIDEO_HEIGHT=288;
+    VIDEO_WIDTH=720;
+    VIDEO_HEIGHT=480;
     //Fps=25;
   }
 
@@ -1198,6 +1198,7 @@ void loop(void)
     initGPIO();
     initCOM();
     initRX();
+    encoder_stop_dvbt();
     load=1;
   }
 
@@ -1945,7 +1946,7 @@ void erreur(void) {
   gpioSetValue(ptt_vocal, high);
   usleep(600000);
   system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Erreur, fréquences RX et TX identiques'");
-	system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
+  system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
   //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/erreur.wav");
   usleep(200000);
   gpioSetValue(ptt_vocal, low);

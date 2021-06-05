@@ -28,6 +28,10 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   sudo apt-get -y install libusb-1.0-0-dev # longmynd
   sudo apt-get install libcurl4-openssl-dev # Command encodeur H.264 / H.265
 
+  sudo apt-get -y install apache2
+  sudo apt-get -y install php php-mbstring
+  sudo apt-get -y install php-ssh2
+
   # Synthese vocale
   sudo apt-get -y install libttspico-utils
 
@@ -149,7 +153,8 @@ if grep -q "Jetson Nano" /proc/device-tree/model; then
   cd /home/$USER/datv_repeater/dvb_t_stack/Release
   make clean
   make
-  cp dvb_t_stack /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack
+  cp dvb_t_stack /home/$USER/datv_repeater/dvbtx/bin/
+  chmod +x /home/$USER/datv_repeater/dvbtx/bin/dvb_t_stack
 
   #cd /home/$USER/datv_repeater/dvb_t_stack
   #sudo cp datvexpress16.ihx /lib/firmware/datvexpress/datvexpress16.ihx
