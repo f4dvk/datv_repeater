@@ -1494,10 +1494,12 @@ void Commande(void)
         Date();
         verbprintf(0,"%s RX 145.9MHz DVB-T\n", date);
         RX_145=1;
+        SetConfigParam(PATH_PCONFIG_SRC, "source", "HDMI");
+        system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
         //band_select();
         RX=3;
         //gpioSetValue(ant_437, low);
-        //gpioSetValue(rx_tnt, high);
+        gpioSetValue(rx_tnt, high);
         vocal();
       }
       else erreur();
@@ -1691,10 +1693,17 @@ void tempo_TX(void)
   {
     Date();
     verbprintf(0,"%s Tempo de fin TX\n", date);
-    TX_LOW();
-    RX_LOW();
-    //usleep(500);
-    initRX();
+    if (RX != 6)
+    {
+      //TX_LOW();
+      //RX_LOW();
+      //usleep(500);
+      initRX();
+    }
+    else
+    {
+      TX_LOW();
+    }
     vocal();
   }
 }
