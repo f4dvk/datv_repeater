@@ -1645,6 +1645,7 @@ void Commande(void)
     if ((Buffer[1] == 12) && (Buffer[2] == 10) && (Buffer[3] == 10) && (Cod>0)) // Code *99
     {
       Date();
+      TX_LOW();
       verbprintf(0,"%s Relais Inactif\n", date);
       kill_ATV();
     }

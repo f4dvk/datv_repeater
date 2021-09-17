@@ -70,8 +70,10 @@ cvlc -f --codec ffmpeg --video-title-timeout=1 v4l2:///dev/video0 --input-slave=
   "CAMERA" ) # Audio ok.
 if [ "$TYPE_CAM" == "1" ]; then
   cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main >/dev/null 2>/dev/null &
-else
+elif [ "$TYPE_CAM" == "2" ]; then
   cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554/live/ch0 >/dev/null 2>/dev/null &
+else
+  cvlc -f --codec ffmpeg --video-title-timeout=1 http://$USR_CAM:$PW_CAM@$IP_CAM:81/videostream.cgi?stream=1 >/dev/null 2>/dev/null &
 fi
 #mplayer -fs rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main &
   ;;

@@ -53,6 +53,7 @@ int lon=30;         //30 ou 22 longueur message hexa en quartets(4bits)  (debut 
 int bits = 0;       //codage des echantillons 8 ou 16 bits
 int N_canaux = 0;   //Nbre de canaux audio
 int opt_osm = 0;    //argument pour affichage sur OpenStreetMap
+int no_checksum=0;  //argument pour activer le décodage sur checksum à 0
 int opt_minute = 0;
 int flux_wav = 1;   //flux audio via stdin ou fichier .wav
 int canal_audio = 0;//canal audio
@@ -1556,7 +1557,7 @@ for(j=0;j<22;j++)
 		}
 if (ss==0)   fprintf(stderr,"\n CRC_1 OK");
 else
-    {if(zero==0) {fprintf(stderr,"\n CRC_1 null?");ss=0;}
+    {if((no_checksum) && (zero==0)) {fprintf(stderr,"\n CRC_1 null?");ss=0;}
     else fprintf(stderr,"\n CRC_1 Mauvais");
     }
 return ss;
@@ -1597,7 +1598,7 @@ for(j=0;j<13;j++)
 		}
 if (ss==0)   fprintf(stderr,"\n CRC_2 OK");
 else
-    {if(zero==0) {fprintf(stderr,"\n CRC_2 null? ");ss=0;}
+    {if((no_checksum) && (zero==0)) {fprintf(stderr,"\n CRC_2 null? ");ss=0;}
     else fprintf(stderr,"\n CRC_2 Mauvais. ATTENTION: il y a des erreurs ");
     }
 return ss;
@@ -1691,6 +1692,7 @@ int main(int argc, char **argv) {
         if   (strcmp(*argv, "--help") == 0){affiche_aide();return 0;}
 
         else if ( (strcmp(*argv, "--osm") == 0) ) opt_osm=1;
+        else if ( (strcmp(*argv, "--no_checksum") == 0) ) no_checksum=1;
         else if ( (strcmp(*argv, "--2") == 0) ) coeff=2;
         else if ( (strcmp(*argv, "--3") == 0) ) coeff=3;
         else if ( (strcmp(*argv, "--4") == 0) ) coeff=4;
