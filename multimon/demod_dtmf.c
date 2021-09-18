@@ -1161,7 +1161,11 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 					}
 					else if (DTMF == 12){
 						Cd = 3;
-						DTMF=0;}
+						DTMF=0;
+					}
+					else if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 13)){  // *40
+						Cd = 5;
+					}
 
 					if (Cod == Cd) {
 						Commande();
@@ -1615,13 +1619,52 @@ void Commande(void)
 /////////////////////////////////////// 406 ///////////////////////////////////////
     if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 13) && (Cod>0)) // Code *40
     {
+      char Freq_sarsat[12];
+      int D_Khz;
+      int Khz;
       TX_LOW();
       RX_LOW();
       usleep(500);
+
+      if (Buffer[4] < 3)
+      {
+        D_Khz = Buffer[4] + 1;
+      }
+      else if ((Buffer[4] > 7) && (Buffer[4] < 11))
+      {
+        D_Khz = Buffer[4] - 1;
+      }
+      else if (Buffer[4] == 13)
+      {
+        D_Khz = 0;
+      }
+      else
+      {
+        D_Khz = Buffer[4];
+      }
+
+      if (Buffer[5] < 3)
+      {
+        Khz = Buffer[5] + 1;
+      }
+      else if ((Buffer[5] > 7) && (Buffer[5] < 11))
+      {
+        Khz = Buffer[5] - 1;
+      }
+      else if (Buffer[5] == 13)
+      {
+        Khz = 0;
+      }
+      else
+      {
+        Khz = Buffer[5];
+      }
+
+      snprintf(Freq_sarsat, 12, "406.0%d%dM", D_Khz, Khz);
       Date();
-      verbprintf(0,"%s Décodeur SARSAT 406.028M\n", date);
-      SetConfigParam(PATH_PCONFIG_406, "low", "406.028M");
-      SetConfigParam(PATH_PCONFIG_406, "high", "406.028M");
+      verbprintf(0,"%s Décodeur SARSAT %s\n", date, Freq_sarsat);
+      SetConfigParam(PATH_PCONFIG_406, "low", Freq_sarsat);
+      SetConfigParam(PATH_PCONFIG_406, "high", Freq_sarsat);
       gpioSetValue(sarsat, high);
       system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
       RX=40;

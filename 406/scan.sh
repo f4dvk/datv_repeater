@@ -20,6 +20,6 @@ EOF
 FREQLOW=$(get_config_var low $PATH_406CONFIG)
 FREQHIGH=$(get_config_var high $PATH_406CONFIG)
 
-/home/$USER/datv_repeater/406/scan406.pl $FREQLOW"M" $FREQHIGH"M"
+/home/$USER/datv_repeater/406/scan406.pl $FREQLOW $FREQHIGH
 
 exit
