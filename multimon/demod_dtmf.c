@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <curl/curl.h>
 
 #include "jetsonGPIO.h"
@@ -70,6 +71,9 @@ int OK=false;
 int Cod=0;
 int Cd;
 
+//////////////////// Commande PHP /////////////
+char Cmd_php[10];
+
 //////////////////// USB ///////////////////
 char USB[8];
 
@@ -83,6 +87,7 @@ char path2[630];
 char path3[630];
 char path4[630];
 char path5[630];
+char path6[630];
 
 char Tx[10];
 FILE *dvb;
@@ -278,6 +283,9 @@ void initGPIO(void)
 
   snprintf(path5, 630, "/home/%s/406/config.txt", user);
   #define PATH_PCONFIG_406 path5
+
+  snprintf(path6, 630, "/home/%s/datv_repeater/cmd.txt", user);
+  #define PATH_TCM_PHP path6
 
   ///////////////////// GPIO ////////////////////
   gpioSetDirection(ptt_vocal, outputPin);
@@ -1193,6 +1201,54 @@ void tempo_dtmf(void)
   }
 }
 
+void Efface_Fichier()
+{
+  FILE* fichier = NULL;
+
+  fichier = fopen(PATH_TCM_PHP, "w+");
+  if(fichier != 0)
+  {
+     fputs("x\n", fichier);
+     fclose(fichier);
+  }
+}
+
+void Lecture_Fichier(char *code)
+{
+  FILE* fichier = NULL;
+  int caractereActuel = 0;
+  char caractere[2];
+  strcpy(code,"");
+  int b=4;
+
+  fichier = fopen(PATH_TCM_PHP, "r");
+  if(fichier != 0)
+  {
+     // Boucle de lecture des caractères un à un
+     do
+     {
+       caractereActuel = fgetc(fichier); // On lit le caractère
+       //printf("%c", caractereActuel); // On l'affiche
+       snprintf(caractere, 2, "%c", caractereActuel);
+       if (strcmp (code, "*40") != 0)
+       {
+       strcat(code,caractere);
+       }
+       else if ((caractereActuel != EOF) && ((strchr(caractere,'\n')) ==0) && (b < 6))
+       {
+         Buffer[b]=atoi(caractere);
+         //printf("%s\n", caractere);
+         b++;
+       }
+     } while (caractereActuel != EOF); // On continue tant que fgetc n'a pas retourné EOF (fin de fichier)
+
+     fclose(fichier);
+  }
+  char *p;
+  if((p=strchr(code,'\n')) !=0 ) *p=0; //Remove \n
+  //printf("%s",code);
+}
+
 void loop(void)
 {
   if (load == 0)
@@ -1211,6 +1267,29 @@ void loop(void)
   tempo_TX();
   tempo_activation();
   Ptt();
+
+  ////// Commande PHP //////
+  Lecture_Fichier(Cmd_php);
+  if (strcmp (Cmd_php, "x") != 0)
+  {
+    if ((On != 1) && (strcmp (Cmd_php, "*99") != 0))
+    {
+      gpioSetValue(Activation, high); // Commutation ON
+      GetConfigParam(PATH_PCONFIG, "osd", Actif);
+      if (strcmp (Actif, "1") == 0)
+      {
+        SetConfigParam(PATH_PCONFIG, "texte", "ON");
+        encoder_osd();
+      }
+      Date();
+      verbprintf(0,"%s Relais Actif\n", date);
+      On=1;
+    }
+    Commande();
+    Efface_Fichier();
+    top_on=time(NULL); // Reset tempo Activation
+  }
+
 }
 
 void Commande(void)
@@ -1220,7 +1299,7 @@ void Commande(void)
   usleep(100);
 
   //////////////////////////////////////// TX ////////////////////////////////////////
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 0) && (Cod>0)) // Code *01
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 0) && (Cod>0)) || (strcmp (Cmd_php, "*01") == 0)) // Code *01
     {
       if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 1){
@@ -1254,7 +1333,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 1) && (Cod>0)) // Code *02
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 1) && (Cod>0)) || (strcmp (Cmd_php, "*02") == 0)) // Code *02
     {
       if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 2){
@@ -1288,7 +1367,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 2) && (Cod>0)) // Code *03
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 2) && (Cod>0)) || (strcmp (Cmd_php, "*03") == 0)) // Code *03
     {
       if ((RX_437 == 0) && (RX != 40) && (RX != 43)){
         if (TX != 3){
@@ -1317,7 +1396,7 @@ void Commande(void)
       }
       else erreur();
     }
-    /*if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 4) && (Cod>0)) // Code *04
+    /*if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 4) && (Cod>0)) || (strcmp (Cmd_php, "*04") == 0)) // Code *04
     {
       if (RX_437 == 0){
         if (TX != 4){
@@ -1351,7 +1430,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 5) && (Cod>0)) // Code *05
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 5) && (Cod>0)) || (strcmp (Cmd_php, "*05") == 0)) // Code *05
     {
       if (RX_437 == 0){
         if (TX != 5){
@@ -1385,7 +1464,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 6) && (Cod>0)) // Code *06
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 6) && (Cod>0)) || (strcmp (Cmd_php, "*06") == 0)) // Code *06
     {
       if (RX_1255 == 0){
         if (TX != 6){
@@ -1419,7 +1498,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 8) && (Cod>0)) // Code *07
+    if (((Buffer[1] == 12) && (Buffer[2] == 13) && (Buffer[3] == 8) && (Cod>0)) || (strcmp (Cmd_php, "*07") == 0)) // Code *07
     {
       if (RX_437 == 0){
         if (TX != 7){
@@ -1450,7 +1529,7 @@ void Commande(void)
     } */
 
 //////////////////////////////////////// RX ////////////////////////////////////////
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 13) && (Cod>0)) // Code *10
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 13) && (Cod>0)) || (strcmp (Cmd_php, "*10") == 0)) // Code *10
     {
       if (TX_145 == 0){
         RX_LOW();
@@ -1468,7 +1547,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 0) && (Cod>0)) // Code *11
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 0) && (Cod>0)) || (strcmp (Cmd_php, "*11") == 0)) // Code *11
     {
       if (TX_145 == 0){
         RX_LOW();
@@ -1486,7 +1565,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) // Code *12
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 1) && (Cod>0)) || (strcmp (Cmd_php, "*12") == 0)) // Code *12
     {
       if (TX_145 == 0){
         RX_LOW();
@@ -1508,7 +1587,7 @@ void Commande(void)
       }
       else erreur();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 2) && (Cod>0)) // Code *13
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 2) && (Cod>0)) || (strcmp (Cmd_php, "*13") == 0)) // Code *13
     {
       RX_LOW();
       usleep(500);
@@ -1519,7 +1598,7 @@ void Commande(void)
       RX=4;
       vocal();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 4) && (Cod>0)) // Code *14
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 4) && (Cod>0)) || (strcmp (Cmd_php, "*14") == 0)) // Code *14
     {
       RX_LOW();
       usleep(500);
@@ -1530,7 +1609,7 @@ void Commande(void)
       RX=5;
       vocal();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 5) && (Cod>0)) // Code *15
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 5) && (Cod>0)) || (strcmp (Cmd_php, "*15") == 0)) // Code *15
     {
       RX_LOW();
       usleep(500);
@@ -1541,7 +1620,7 @@ void Commande(void)
       RX=6;
       vocal();
     }
-   /* if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) // Code *16
+   /* if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) || (strcmp (Cmd_php, "*16") == 0)) // Code *16
     {
       RX_LOW();
       usleep(500);
@@ -1552,7 +1631,7 @@ void Commande(void)
       RX=7;
       vocal();
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) // Code *17
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) || (strcmp (Cmd_php, "*17") == 0)) // Code *17
     {
       RX_LOW();
       usleep(500);
@@ -1617,7 +1696,7 @@ void Commande(void)
     } */
 
 /////////////////////////////////////// 406 ///////////////////////////////////////
-    if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 13) && (Cod>0)) // Code *40
+    if (((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 13) && (Cod>0)) || (strcmp (Cmd_php, "*40") == 0)) // Code *40
     {
       char Freq_sarsat[12];
       int D_Khz;
@@ -1626,38 +1705,46 @@ void Commande(void)
       RX_LOW();
       usleep(500);
 
-      if (Buffer[4] < 3)
-      {
-        D_Khz = Buffer[4] + 1;
-      }
-      else if ((Buffer[4] > 7) && (Buffer[4] < 11))
-      {
-        D_Khz = Buffer[4] - 1;
-      }
-      else if (Buffer[4] == 13)
-      {
-        D_Khz = 0;
-      }
-      else
+      if (strcmp (Cmd_php, "*40") == 0)
       {
         D_Khz = Buffer[4];
-      }
-
-      if (Buffer[5] < 3)
-      {
-        Khz = Buffer[5] + 1;
-      }
-      else if ((Buffer[5] > 7) && (Buffer[5] < 11))
-      {
-        Khz = Buffer[5] - 1;
-      }
-      else if (Buffer[5] == 13)
-      {
-        Khz = 0;
+        Khz = Buffer[5];
       }
       else
       {
-        Khz = Buffer[5];
+        if (Buffer[4] < 3)
+        {
+          D_Khz = Buffer[4] + 1;
+        }
+        else if ((Buffer[4] > 7) && (Buffer[4] < 11))
+        {
+          D_Khz = Buffer[4] - 1;
+        }
+        else if (Buffer[4] == 13)
+        {
+          D_Khz = 0;
+        }
+        else
+        {
+          D_Khz = Buffer[4];
+        }
+
+        if (Buffer[5] < 3)
+        {
+          Khz = Buffer[5] + 1;
+        }
+        else if ((Buffer[5] > 7) && (Buffer[5] < 11))
+        {
+          Khz = Buffer[5] - 1;
+        }
+        else if (Buffer[5] == 13)
+        {
+          Khz = 0;
+        }
+        else
+        {
+          Khz = Buffer[5];
+        }
       }
 
       snprintf(Freq_sarsat, 12, "406.0%d%dM", D_Khz, Khz);
@@ -1669,7 +1756,7 @@ void Commande(void)
       system("sh -c 'gnome-terminal --window --full-screen -- /home/$USER/406/scan.sh &'");
       RX=40;
     }
-    if ((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 2) && (Cod>0)) // Code *43
+    if (((Buffer[1] == 12) && (Buffer[2] == 4) && (Buffer[3] == 2) && (Cod>0)) || (strcmp (Cmd_php, "*43") == 0)) // Code *43
     {
       TX_LOW();
       RX_LOW();
@@ -1685,7 +1772,7 @@ void Commande(void)
 
 /////////////////////////////////////// KILL ///////////////////////////////////////
 
-    if ((Buffer[1] == 12) && (Buffer[2] == 10) && (Buffer[3] == 10) && (Cod>0)) // Code *99
+    if (((Buffer[1] == 12) && (Buffer[2] == 10) && (Buffer[3] == 10) && (Cod>0)) || (strcmp (Cmd_php, "*99") == 0)) // Code *99
     {
       Date();
       TX_LOW();
@@ -1694,13 +1781,13 @@ void Commande(void)
     }
 
 /////////////////////////////////////// ARRET ///////////////////////////////////////
-    if ((Buffer[1] == 3) && (Cod>0)) // Code A
+    if (((Buffer[1] == 3) && (Cod>0)) || (strcmp (Cmd_php, "A") == 0)) // Code A
     {
       Date();
       verbprintf(0,"%s ARRET TX\n", date);
       TX_LOW();
     }
-    if ((Buffer[1] == 11) && (Cod>0)) // Code C
+    if (((Buffer[1] == 11) && (Cod>0)) || (strcmp (Cmd_php, "C") == 0)) // Code C
     {
       Date();
       verbprintf(0,"%s CONTROLE GENERAL\n", date);
