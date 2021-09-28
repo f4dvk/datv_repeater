@@ -1328,6 +1328,8 @@ void Commande(void)
           }
           top=time(NULL);
           topPTT=time(NULL);
+          SetConfigParam(PATH_PCONFIG, "texte", "ON TX: *01");
+          encoder_osd();
           vocal();
         }
       }
@@ -1362,6 +1364,8 @@ void Commande(void)
           }
           top=time(NULL);
           topPTT=time(NULL);
+          SetConfigParam(PATH_PCONFIG, "texte", "ON TX: *02");
+          encoder_osd();
           vocal();
         }
       }
@@ -1391,6 +1395,8 @@ void Commande(void)
           system("/home/$USER/datv_repeater/dvbtx/scripts/tx.sh >/dev/null 2>/dev/null &");
           top=time(NULL);
           topPTT=time(NULL);
+          SetConfigParam(PATH_PCONFIG, "texte", "ON TX: *03");
+          encoder_osd();
           vocal();
         }
       }
@@ -1896,6 +1902,11 @@ void TX_LOW(void)
   else // Limesdr via raspberry
   {
     system("/home/$USER/datv_repeater/dvbtx/scripts/TXstop.sh >/dev/null 2>/dev/null &");
+  }
+  if (TX != 0)
+  {
+    SetConfigParam(PATH_PCONFIG, "texte", "ON");
+    encoder_osd();
   }
   //digitalWrite (PTT_DATV, HIGH);
   //digitalWrite (PTT_TNT, HIGH);
