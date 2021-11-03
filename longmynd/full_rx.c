@@ -19,6 +19,9 @@ char IP[10];
 char Port[5];
 char Player[2];
 char Quiet[2];
+char Log[2];
+
+int New=0;
 
 unsigned long delai_TXT=2;          // delai entre deux écritures en secondes
 unsigned long delai_reset=5;          // delai entre perte rx et reset en secondes
@@ -117,6 +120,7 @@ int main() {
     GetConfigParam(PATH_PCONFIG,"port", Port);
     GetConfigParam(PATH_PCONFIG,"player", Player);
     GetConfigParam(PATH_PCONFIG,"quiet", Quiet);
+    GetConfigParam(PATH_PCONFIG,"log", Log);
 
     if(strcmp(In, "a") == 0)
     {
@@ -144,7 +148,7 @@ int main() {
     if (strcmp(Player, "1") == 0)
     {
       //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 10 --marq-size 16 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
+      snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
       system(Command);
     }
 
@@ -180,9 +184,10 @@ int main() {
                 system("sudo killall vlc >/dev/null 2>/dev/null");
                 usleep(300);
                 //snprintf(Command, 530, "mpv --fs --no-cache --no-terminal udp://%s:%s &", IP, Port);
-                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-y 10 --marq-size 16 --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
+                snprintf(Command, 530, "cvlc -f --codec ffmpeg --video-title-timeout=1 --sub-filter marq --marq-color=0xF0D01D --marq-file /home/%s/infos.txt udp://@%s:%s >/dev/null 2>/dev/null &", user, IP, Port);
                 system(Command);
                 LCK=0;
+                strcpy(ServiceProvidertext, "");
               }
               break;
               case 2:
@@ -190,10 +195,12 @@ int main() {
               break;
               case 3:
               strcpy(STATEtext, "DVB-S");
+              if (LCK == 0) New=1;
               LCK=1;
               break;
               case 4:
               strcpy(STATEtext, "DVB-S2");
+              if (LCK == 0) New=1;
               LCK=1;
               break;
               default:
@@ -482,6 +489,17 @@ int main() {
               snprintf(Command, 530, "mv /home/%s/infos.txt.tmp /home/%s/infos.txt", user, user);
               system(Command);
               top2=Time;
+            }
+
+            if ((strcmp(Log, "1") == 0) && (((strcmp(ServiceProvidertext, "") != 0)) && (New == 1)))
+            {
+              time_t timestamp = time( NULL );
+              struct tm * pTime = localtime( & timestamp );
+              char buffer[ MAX_SIZE ];
+              strftime( buffer, MAX_SIZE, "%d/%m/%Y %H:%M:%S", pTime );
+              snprintf(Command, 640, "echo '%s %s %s %s %s %s %s %s' >> /home/%s/log.txt", buffer, ServiceProvidertext, FREQtext2, STATEtext, Modulationtext, SRtext, FECtext, MERtext, user);
+              system(Command);
+              New=0;
             }
 
           }

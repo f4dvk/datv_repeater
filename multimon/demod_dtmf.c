@@ -1331,6 +1331,7 @@ void Commande(void)
           SetConfigParam(PATH_PCONFIG, "texte", "ON TX: *01");
           encoder_osd();
           vocal();
+          system("/home/$USER/datv_repeater/dvbtx/scripts/pluto_error.sh >/dev/null 2>/dev/null &");
         }
       }
       else erreur();
@@ -1367,6 +1368,7 @@ void Commande(void)
           SetConfigParam(PATH_PCONFIG, "texte", "ON TX: *02");
           encoder_osd();
           vocal();
+          system("/home/$USER/datv_repeater/dvbtx/scripts/pluto_error.sh >/dev/null 2>/dev/null &");
         }
       }
       else erreur();
@@ -1626,18 +1628,18 @@ void Commande(void)
       RX=6;
       vocal();
     }
-   /* if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) || (strcmp (Cmd_php, "*16") == 0)) // Code *16
+    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 6) && (Cod>0)) || (strcmp (Cmd_php, "*16") == 0)) // Code *16
     {
       RX_LOW();
       usleep(500);
       Date();
-      verbprintf(0,"%s MIRE\n", date);
-      SetConfigParam(PATH_PCONFIG_SRC, "source", "MIRE");
+      verbprintf(0,"%s RTMP\n", date);
+      SetConfigParam(PATH_PCONFIG_SRC, "source", "RTMP");
       system("/home/$USER/datv_repeater/source/rx_video.sh >/dev/null 2>/dev/null");
       RX=7;
       vocal();
     }
-    if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) || (strcmp (Cmd_php, "*17") == 0)) // Code *17
+    /*if (((Buffer[1] == 12) && (Buffer[2] == 0) && (Buffer[3] == 8) && (Cod>0)) || (strcmp (Cmd_php, "*17") == 0)) // Code *17
     {
       RX_LOW();
       usleep(500);
@@ -2045,14 +2047,14 @@ void vocal(void) {
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/15.wav");
   }
 
-  /*if (RX == 7)
+  if (RX == 7)
   {
-    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Mire'");
+    system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'RX; R T M P'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");
     //system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/16.wav");
   }
 
-  if (RX == 8)
+  /*if (RX == 8)
   {
     system("pico2wave -l fr-FR -w /home/$USER/datv_repeater/son/vocal.wav 'Multi-vidéos'");
     system("aplay -D plughw:2,0 --quiet /home/$USER/datv_repeater/son/vocal.wav");

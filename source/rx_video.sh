@@ -34,7 +34,7 @@ if [ "$TYPE_CAM" == "1" ]; then
   gst-launch-1.0 -vvv -q glvideomixer name=mix sink_0::xpos=0 sink_0::ypos=0 sink_0::width=640 sink_0::height=360 sink_1::xpos=640 sink_1::ypos=0 sink_1::width=640 \
   sink_1::height=360 sink_2::xpos=0 sink_2::ypos=360 sink_2::width=640 sink_2::height=360 sink_3::xpos=640 sink_3::ypos=360 sink_3::width=640 sink_3::height=360 \
   sink_0::alpha=1.0 sink_1::alpha=1.0 sink_2::alpha=1.0 sink_3::alpha=1.0 ! queue2 ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvoverlaysink sync=false \
-  videotestsrc ! textoverlay text="F5ZBC   http://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 66" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
+  videotestsrc ! textoverlay text=" F5ZBC  https://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 60" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
   rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main ! queue ! application/x-rtp, media=video, framerate=30, encoding-name=H264 ! rtph264depay ! h264parse ! decodebin ! nvvidconv ! 'video/x-raw(memory:NVMM), width=640, height=360, format=(string)I420' ! nvvidconv ! queue2 ! mix.sink_1 \
   multifilesrc location=/home/$USER/datv_repeater/media/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
   'video/x-raw(memory:NVMM), width=640, height=360, framerate=30/1, format=(string)I420' ! nvvidconv ! alpha alpha=1.0 ! queue2 ! mix.sink_2 \
@@ -43,7 +43,7 @@ elif [ "$TYPE_CAM" == "2" ]; then
   gst-launch-1.0 -vvv -q glvideomixer name=mix sink_0::xpos=0 sink_0::ypos=0 sink_0::width=640 sink_0::height=360 sink_1::xpos=640 sink_1::ypos=0 sink_1::width=640 \
   sink_1::height=360 sink_2::xpos=0 sink_2::ypos=360 sink_2::width=640 sink_2::height=360 sink_3::xpos=640 sink_3::ypos=360 sink_3::width=640 sink_3::height=360 \
   sink_0::alpha=1.0 sink_1::alpha=1.0 sink_2::alpha=1.0 sink_3::alpha=1.0 ! queue2 ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvoverlaysink sync=false \
-  videotestsrc ! textoverlay text="F5ZBC   http://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 66" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
+  videotestsrc ! textoverlay text=" F5ZBC  https://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 60" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
   rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554/live/ch0 ! queue ! application/x-rtp, media=video, framerate=30, encoding-name=H264 ! rtph264depay ! h264parse ! decodebin ! nvvidconv ! 'video/x-raw(memory:NVMM), width=640, height=360, format=(string)I420' ! nvvidconv ! queue2 ! mix.sink_1 \
   multifilesrc location=/home/$USER/datv_repeater/media/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
   'video/x-raw(memory:NVMM), width=640, height=360, framerate=30/1, format=(string)I420' ! nvvidconv ! alpha alpha=1.0 ! queue2 ! mix.sink_2 \
@@ -52,7 +52,7 @@ elif [ "$TYPE_CAM" == "3" ]; then
   gst-launch-1.0 -vvv -q glvideomixer name=mix sink_0::xpos=0 sink_0::ypos=0 sink_0::width=640 sink_0::height=360 sink_1::xpos=640 sink_1::ypos=0 sink_1::width=640 \
   sink_1::height=360 sink_2::xpos=0 sink_2::ypos=360 sink_2::width=640 sink_2::height=360 sink_3::xpos=640 sink_3::ypos=360 sink_3::width=640 sink_3::height=360 \
   sink_0::alpha=1.0 sink_1::alpha=1.0 sink_2::alpha=1.0 sink_3::alpha=1.0 ! queue2 ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvoverlaysink sync=false \
-  videotestsrc ! textoverlay text="F5ZBC   http://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 66" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
+  videotestsrc ! textoverlay text=" F5ZBC  https://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 60" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
   rtspsrc location=rtsp://$USR_CAM:$PW_CAM@$IP_CAM:81/live/ch0 ! queue ! application/x-rtp, media=video, framerate=30, encoding-name=H264 ! rtph264depay ! h264parse ! decodebin ! nvvidconv ! 'video/x-raw(memory:NVMM), width=640, height=360, format=(string)I420' ! nvvidconv ! queue2 ! mix.sink_1 \
   multifilesrc location=/home/$USER/datv_repeater/media/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
   'video/x-raw(memory:NVMM), width=640, height=360, framerate=30/1, format=(string)I420' ! nvvidconv ! alpha alpha=1.0 ! queue2 ! mix.sink_2 \
@@ -61,7 +61,7 @@ else
   gst-launch-1.0 -vvv -q glvideomixer name=mix sink_0::xpos=0 sink_0::ypos=0 sink_0::width=640 sink_0::height=360 sink_1::xpos=640 sink_1::ypos=0 sink_1::width=640 \
   sink_1::height=360 sink_2::xpos=0 sink_2::ypos=360 sink_2::width=640 sink_2::height=360 sink_3::xpos=640 sink_3::ypos=360 sink_3::width=640 sink_3::height=360 \
   sink_0::alpha=1.0 sink_1::alpha=1.0 sink_2::alpha=1.0 sink_3::alpha=1.0 ! queue2 ! nvvidconv ! 'video/x-raw(memory:NVMM), width=1280, height=720, framerate=30/1' ! nvoverlaysink \
-  videotestsrc ! textoverlay text="F5ZBC   http://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 66" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
+  videotestsrc ! textoverlay text=" F5ZBC  https://f5zbc.fr" valignment=top halignment=left font-desc="Sans, 60" ! video/x-raw, width=640, heigh=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_0 \
   videotestsrc ! video/x-raw, width=640, height=360, framerate=30/1 ! alpha alpha=1.0 ! queue2 ! mix.sink_1 \
   multifilesrc location=/home/$USER/datv_repeater/media/film.mpg loop=true ! decodebin ! videoscale ! videorate ! nvvidconv ! \
   'video/x-raw(memory:NVMM), width=640, height=360, framerate=30/1, format=(string)I420' ! nvvidconv ! alpha alpha=1.0 ! queue2 ! mix.sink_2 \
@@ -82,9 +82,12 @@ if [ "$TYPE_CAM" == "1" ]; then
 elif [ "$TYPE_CAM" == "2" ]; then
   cvlc -f --codec ffmpeg --video-title-timeout=1 rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554/live/ch0 >/dev/null 2>/dev/null &
 elif [ "$TYPE_CAM" == "3" ]; then
-  cvlc -f --codec ffmpeg --video-title-timeout=1 http://$USR_CAM:$PW_CAM@$IP_CAM:81/videostream.cgi?stream=1 >/dev/null 2>/dev/null &
+  cvlc --udp-timeout=-1 -f --codec ffmpeg --video-title-timeout=1 http://$USR_CAM:$PW_CAM@$IP_CAM:81/videostream.cgi?stream=1 >/dev/null 2>/dev/null &
 fi
 #mplayer -fs rtsp://$USR_CAM:$PW_CAM@$IP_CAM:554//h264Preview_01_main &
+  ;;
+  "RTMP" )
+  cvlc -f --codec ffmpeg --video-title-timeout=1 udp://@:10200 >/dev/null 2>/dev/null &
   ;;
 esac
 
