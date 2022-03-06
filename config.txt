@@ -18,3 +18,5 @@ ypos=1
 taille=20
 couleur=#FCF103
 texte=ON
+call_batc=f5zbc
+key_batc=xxxxxx

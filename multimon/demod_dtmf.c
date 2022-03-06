@@ -600,6 +600,8 @@ int encoder_start()
   char Ip[20];
   char PlutoIp[20];
   char Call[10];
+  char Call_batc[10];
+  char Key_batc[10];
   char Freq[10];
   char Constellation[10];
   char Sr[10];
@@ -616,6 +618,8 @@ int encoder_start()
   GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
   GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
   GetConfigParam(PATH_PCONFIG,"call", Call);
+  GetConfigParam(PATH_PCONFIG,"call_batc", Call_batc);
+  GetConfigParam(PATH_PCONFIG,"key_batc", Key_batc);
   GetConfigParam(PATH_PCONFIG_TX,"freq", Freq);
   GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
   GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
@@ -664,13 +668,13 @@ int encoder_start()
 
   snprintf(Body, 500, " <request><rtmp><port>1935</port>\
           <push>\
-          <active>0</active>\
-          <url></url>\
+          <active>1</active>\
+          <url>rtmp://rtmp.batc.org.uk/live/%s-%s</url>\
           </push>\
           <push>\
           <active>1</active>\
           <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,%s,nocalib,800,32,/,%s,</url>\
-          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Gain_Pluto, Call);
+          </push></rtmp></request>", Call_batc, Key_batc, PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Gain_Pluto, Call);
 
   char *body = Body;
 
@@ -691,6 +695,8 @@ int encoder_stop()
   char Ip[20];
   char PlutoIp[20];
   char Call[10];
+  char Call_batc[10];
+  char Key_batc[10];
   char Freq[10];
   char Constellation[10];
   char Sr[10];
@@ -704,6 +710,8 @@ int encoder_stop()
   GetConfigParam(PATH_PCONFIG,"encoderip", Ip);
   GetConfigParam(PATH_PCONFIG,"plutoip", PlutoIp);
   GetConfigParam(PATH_PCONFIG,"call", Call);
+  GetConfigParam(PATH_PCONFIG,"call_batc", Call_batc);
+  GetConfigParam(PATH_PCONFIG,"key_batc", Key_batc);
   GetConfigParam(PATH_PCONFIG_TX,"freq", Freq);
   GetConfigParam(PATH_PCONFIG_TX,"symbolrate", Sr);
   GetConfigParam(PATH_PCONFIG_TX,"fec", Fec);
@@ -739,13 +747,13 @@ int encoder_stop()
 
   snprintf(Body, 500, " <request><rtmp><port>1935</port>\
           <push>\
-          <active>0</active>\
-          <url></url>\
+          <active>1</active>\
+          <url>rtmp://rtmp.batc.org.uk/live/%s-%s</url>\
           </push>\
           <push>\
           <active>0</active>\
           <url>rtmp://%s:7272/,%s,%s,%s,%s,%d%d,-0,nocalib,800,32,/,%s,</url>\
-          </push></rtmp></request>", PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Call);
+          </push></rtmp></request>", Call_batc, Key_batc, PlutoIp, Freq, Mode, Constellation, Sr, fec_num, fec_den, Call);
 
   char *body = Body;
 
