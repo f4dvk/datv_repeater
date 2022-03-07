@@ -934,7 +934,8 @@ int encoder_video_dvbt()
   //Bitrate_TS=Bitrate_TS*Margin;
   //Bitrate_TS=Bitrate_TS/100;
 
-  Bitrate_Video=(Bitrate_TS-24000-((32000)*15/10))*725/1000;
+  //Bitrate_Video=(Bitrate_TS-24000-((32000)*15/10))*725/1000;
+  Bitrate_Video=(Bitrate_TS-24000-((24000)*15/10))*725/1000;
 
   Bitrate_Video=Bitrate_Video/1000;
 
@@ -1147,19 +1148,6 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 			i = process_block(s);
 			if (i != s->l1.dtmf.lastch && i >= 0){
 				DTMF=i;
-				if (On != 1)
-				{
-					gpioSetValue(Activation, high); // Commutation ON
-					GetConfigParam(PATH_PCONFIG, "osd", Actif);
-					if (strcmp (Actif, "1") == 0)
-					{
-						SetConfigParam(PATH_PCONFIG, "texte", "ON");
-						encoder_osd();
-					}
-					Date();
-					verbprintf(0,"%s Relais Actif\n", date);
-					On=1;
-				}
 				top_on=time(NULL); // Reset tempo Activation
 				Date();
 				verbprintf(0, "%s DTMF: %c\n", date, dtmf_transl[i]);
@@ -1191,6 +1179,19 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 						OK=false;
 						DTMF=0;
 					}
+				}
+				if ((On != 1) && (Buffer[2] == 13))
+				{
+					gpioSetValue(Activation, high); // Commutation ON
+					GetConfigParam(PATH_PCONFIG, "osd", Actif);
+					if (strcmp (Actif, "1") == 0)
+					{
+						SetConfigParam(PATH_PCONFIG, "texte", "ON");
+						encoder_osd();
+					}
+					Date();
+					verbprintf(0,"%s Relais Actif\n", date);
+					On=1;
 				}
 				//verbprintf(0,"Valeur: %d\n", DTMF);
 			}
@@ -1280,7 +1281,7 @@ void loop(void)
   Lecture_Fichier(Cmd_php);
   if (strcmp (Cmd_php, "x") != 0)
   {
-    if ((On != 1) && (strcmp (Cmd_php, "*99") != 0))
+    if ((On != 1) && ((strcmp (Cmd_php, "*01") == 0) || (strcmp (Cmd_php, "*02") == 0) || (strcmp (Cmd_php, "*03") == 0)))
     {
       gpioSetValue(Activation, high); // Commutation ON
       GetConfigParam(PATH_PCONFIG, "osd", Actif);
