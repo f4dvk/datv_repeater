@@ -1180,7 +1180,7 @@ static void dtmf_demod(struct demod_state *s, buffer_t buffer, int length)
 						DTMF=0;
 					}
 				}
-				if ((On != 1) && (Buffer[2] == 13))
+				if ((On != 1) && ((Buffer[2] == 13) || (Buffer[2] == 4)))
 				{
 					gpioSetValue(Activation, high); // Commutation ON
 					GetConfigParam(PATH_PCONFIG, "osd", Actif);
@@ -1281,7 +1281,7 @@ void loop(void)
   Lecture_Fichier(Cmd_php);
   if (strcmp (Cmd_php, "x") != 0)
   {
-    if ((On != 1) && ((strcmp (Cmd_php, "*01") == 0) || (strcmp (Cmd_php, "*02") == 0) || (strcmp (Cmd_php, "*03") == 0)))
+    if ((On != 1) && ((strcmp (Cmd_php, "*01") == 0) || (strcmp (Cmd_php, "*02") == 0) || (strcmp (Cmd_php, "*03") == 0) || (strcmp (Cmd_php, "*40") == 0) || (strcmp (Cmd_php, "*43") == 0)))
     {
       gpioSetValue(Activation, high); // Commutation ON
       GetConfigParam(PATH_PCONFIG, "osd", Actif);
@@ -1822,6 +1822,7 @@ void kill_ATV(void)
     SetConfigParam(PATH_PCONFIG, "texte", "OFF");
     encoder_osd();
   }
+  if ((RX == 40) || (RX == 43)) initRX();
 }
 
 void tempo_activation(void)
@@ -1831,7 +1832,6 @@ void tempo_activation(void)
     kill_ATV();
     Date();
     verbprintf(0,"%s Tempo de fin d'activation\n", date);
-    if ((RX == 40) || (RX == 43)) initRX();
   }
 }
 
